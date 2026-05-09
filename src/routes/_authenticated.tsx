@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/re
 import { useAuth } from "@/lib/auth-context";
 import { useTenant } from "@/lib/tenant-context";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Calendar, User, LogOut, Sparkles, Users, Bell, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Calendar, User, LogOut, Sparkles, Users, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 
