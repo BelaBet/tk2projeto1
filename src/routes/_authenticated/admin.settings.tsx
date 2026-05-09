@@ -24,7 +24,13 @@ function SettingsPage() {
 
   useEffect(() => {
     supabase.from("platform_settings").select("*").limit(1).maybeSingle().then(({ data }) => {
-      if (data) setRow(data);
+      if (data) setRow({
+        id: data.id,
+        default_primary_color: data.default_primary_color ?? "#1a3a5c",
+        default_accent_color: data.default_accent_color ?? "#C9993A",
+        default_logo_url: data.default_logo_url,
+        signup_open: data.signup_open,
+      });
     });
   }, []);
 
