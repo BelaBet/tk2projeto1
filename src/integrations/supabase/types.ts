@@ -98,6 +98,8 @@ export type Database = {
           amount: number
           campaign_id: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
           payment_id: string | null
           profile_id: string
@@ -108,6 +110,8 @@ export type Database = {
           amount: number
           campaign_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           payment_id?: string | null
           profile_id: string
@@ -118,6 +122,8 @@ export type Database = {
           amount?: number
           campaign_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           payment_id?: string | null
           profile_id?: string
@@ -283,6 +289,39 @@ export type Database = {
           },
         ]
       }
+      impersonation_sessions: {
+        Row: {
+          ended_at: string | null
+          id: string
+          impersonator_id: string
+          ip_address: string | null
+          reason: string | null
+          started_at: string
+          tenant_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          ended_at?: string | null
+          id?: string
+          impersonator_id: string
+          ip_address?: string | null
+          reason?: string | null
+          started_at?: string
+          tenant_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          ended_at?: string | null
+          id?: string
+          impersonator_id?: string
+          ip_address?: string | null
+          reason?: string | null
+          started_at?: string
+          tenant_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           channel: Database["public"]["Enums"]["message_channel"]
@@ -389,6 +428,8 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           gateway_id: string | null
           id: string
           method: Database["public"]["Enums"]["payment_method"]
@@ -401,6 +442,8 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           gateway_id?: string | null
           id?: string
           method: Database["public"]["Enums"]["payment_method"]
@@ -415,6 +458,8 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           gateway_id?: string | null
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
@@ -442,6 +487,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_roles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["platform_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["platform_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["platform_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          default_accent_color: string | null
+          default_features: Json
+          default_logo_url: string | null
+          default_primary_color: string | null
+          id: string
+          signup_open: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          default_accent_color?: string | null
+          default_features?: Json
+          default_logo_url?: string | null
+          default_primary_color?: string | null
+          id?: string
+          signup_open?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          default_accent_color?: string | null
+          default_features?: Json
+          default_logo_url?: string | null
+          default_primary_color?: string | null
+          id?: string
+          signup_open?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -490,6 +592,178 @@ export type Database = {
           },
         ]
       }
+      subscription_plans: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          features: Json
+          id: string
+          max_admins: number | null
+          max_campaigns: number | null
+          max_events_per_month: number | null
+          max_members: number | null
+          max_sms_per_month: number | null
+          max_storage_mb: number | null
+          max_whatsapp_per_month: number | null
+          monthly_price: number
+          name: string
+          sort_order: number
+          transaction_fee_percent: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          max_admins?: number | null
+          max_campaigns?: number | null
+          max_events_per_month?: number | null
+          max_members?: number | null
+          max_sms_per_month?: number | null
+          max_storage_mb?: number | null
+          max_whatsapp_per_month?: number | null
+          monthly_price?: number
+          name: string
+          sort_order?: number
+          transaction_fee_percent?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          max_admins?: number | null
+          max_campaigns?: number | null
+          max_events_per_month?: number | null
+          max_members?: number | null
+          max_sms_per_month?: number | null
+          max_storage_mb?: number | null
+          max_whatsapp_per_month?: number | null
+          monthly_price?: number
+          name?: string
+          sort_order?: number
+          transaction_fee_percent?: number
+        }
+        Relationships: []
+      }
+      tenant_invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          due_date: string | null
+          gateway_invoice_id: string | null
+          id: string
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          status: Database["public"]["Enums"]["invoice_status"]
+          subscription_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          due_date?: string | null
+          gateway_invoice_id?: string | null
+          id?: string
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subscription_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          due_date?: string | null
+          gateway_invoice_id?: string | null
+          id?: string
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subscription_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          deleted_at: string | null
+          deleted_by: string | null
+          gateway_subscription_id: string | null
+          id: string
+          plan_id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          tenant_id: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          gateway_subscription_id?: string | null
+          id?: string
+          plan_id: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          tenant_id: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          gateway_subscription_id?: string | null
+          id?: string
+          plan_id?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          tenant_id?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           accent_color: string | null
@@ -497,6 +771,8 @@ export type Database = {
           cover_photo_url: string | null
           created_at: string
           custom_domain: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
           logo_url: string | null
           name: string
@@ -512,6 +788,8 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           custom_domain?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           logo_url?: string | null
           name: string
@@ -527,6 +805,8 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           custom_domain?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           logo_url?: string | null
           name?: string
@@ -631,6 +911,13 @@ export type Database = {
     }
     Functions: {
       current_tenant_id: { Args: never; Returns: string }
+      has_platform_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["platform_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -639,6 +926,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
       is_tenant_staff: {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
@@ -649,13 +937,27 @@ export type Database = {
       app_role: "member" | "manager" | "admin"
       event_status: "draft" | "active" | "closed"
       event_type: "event" | "campaign" | "donation"
+      invoice_status:
+        | "draft"
+        | "pending"
+        | "paid"
+        | "overdue"
+        | "void"
+        | "refunded"
       message_channel: "sms" | "whatsapp" | "in_app"
       message_status: "queued" | "sent" | "failed"
       message_target_type: "individual" | "group" | "broadcast"
       payment_method: "pix" | "credit_card" | "debit_card"
       payment_ref_type: "ticket" | "donation"
       payment_status: "pending" | "confirmed" | "failed" | "refunded"
+      platform_role: "super_admin" | "support" | "finance" | "operator"
       profile_status: "pending" | "approved" | "blocked"
+      subscription_status:
+        | "trialing"
+        | "active"
+        | "past_due"
+        | "canceled"
+        | "suspended"
       ticket_status: "active" | "used" | "cancelled"
     }
     CompositeTypes: {
@@ -788,13 +1090,29 @@ export const Constants = {
       app_role: ["member", "manager", "admin"],
       event_status: ["draft", "active", "closed"],
       event_type: ["event", "campaign", "donation"],
+      invoice_status: [
+        "draft",
+        "pending",
+        "paid",
+        "overdue",
+        "void",
+        "refunded",
+      ],
       message_channel: ["sms", "whatsapp", "in_app"],
       message_status: ["queued", "sent", "failed"],
       message_target_type: ["individual", "group", "broadcast"],
       payment_method: ["pix", "credit_card", "debit_card"],
       payment_ref_type: ["ticket", "donation"],
       payment_status: ["pending", "confirmed", "failed", "refunded"],
+      platform_role: ["super_admin", "support", "finance", "operator"],
       profile_status: ["pending", "approved", "blocked"],
+      subscription_status: [
+        "trialing",
+        "active",
+        "past_due",
+        "canceled",
+        "suspended",
+      ],
       ticket_status: ["active", "used", "cancelled"],
     },
   },

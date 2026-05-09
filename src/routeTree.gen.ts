@@ -24,13 +24,20 @@ import { Route as AuthenticatedManageRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedManageIndexRouteImport } from './routes/_authenticated/manage.index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedManageSettingsRouteImport } from './routes/_authenticated/manage.settings'
 import { Route as AuthenticatedManageMembersRouteImport } from './routes/_authenticated/manage.members'
 import { Route as AuthenticatedManageDashboardRouteImport } from './routes/_authenticated/manage.dashboard'
 import { Route as AuthenticatedGroupsGroupIdRouteImport } from './routes/_authenticated/groups.$groupId'
 import { Route as AuthenticatedEventsNewRouteImport } from './routes/_authenticated/events.new'
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events.$eventId'
+import { Route as AuthenticatedAdminTenantsRouteImport } from './routes/_authenticated/admin.tenants'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
+import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
+import { Route as AuthenticatedAdminBillingRouteImport } from './routes/_authenticated/admin.billing'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -107,12 +114,22 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedManageIndexRoute =
   AuthenticatedManageIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedManageRoute,
   } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedManageSettingsRoute =
   AuthenticatedManageSettingsRouteImport.update({
     id: '/settings',
@@ -148,6 +165,35 @@ const AuthenticatedEventsEventIdRoute =
     path: '/$eventId',
     getParentRoute: () => AuthenticatedEventsRoute,
   } as any)
+const AuthenticatedAdminTenantsRoute =
+  AuthenticatedAdminTenantsRouteImport.update({
+    id: '/tenants',
+    path: '/tenants',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminDashboardRoute =
+  AuthenticatedAdminDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminBillingRoute =
+  AuthenticatedAdminBillingRouteImport.update({
+    id: '/billing',
+    path: '/billing',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -155,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/events': typeof AuthenticatedEventsRouteWithChildren
   '/groups': typeof AuthenticatedGroupsRouteWithChildren
@@ -164,12 +211,18 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/scan': typeof AuthenticatedScanRoute
   '/tickets': typeof AuthenticatedTicketsRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/billing': typeof AuthenticatedAdminBillingRoute
+  '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/tenants': typeof AuthenticatedAdminTenantsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/events/new': typeof AuthenticatedEventsNewRoute
   '/groups/$groupId': typeof AuthenticatedGroupsGroupIdRoute
   '/manage/dashboard': typeof AuthenticatedManageDashboardRoute
   '/manage/members': typeof AuthenticatedManageMembersRoute
   '/manage/settings': typeof AuthenticatedManageSettingsRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/manage/': typeof AuthenticatedManageIndexRoute
 }
 export interface FileRoutesByTo {
@@ -186,12 +239,18 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/scan': typeof AuthenticatedScanRoute
   '/tickets': typeof AuthenticatedTicketsRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/billing': typeof AuthenticatedAdminBillingRoute
+  '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/tenants': typeof AuthenticatedAdminTenantsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/events/new': typeof AuthenticatedEventsNewRoute
   '/groups/$groupId': typeof AuthenticatedGroupsGroupIdRoute
   '/manage/dashboard': typeof AuthenticatedManageDashboardRoute
   '/manage/members': typeof AuthenticatedManageMembersRoute
   '/manage/settings': typeof AuthenticatedManageSettingsRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/manage': typeof AuthenticatedManageIndexRoute
 }
 export interface FileRoutesById {
@@ -202,6 +261,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/events': typeof AuthenticatedEventsRouteWithChildren
   '/_authenticated/groups': typeof AuthenticatedGroupsRouteWithChildren
@@ -211,12 +271,18 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
   '/_authenticated/tickets': typeof AuthenticatedTicketsRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/admin/billing': typeof AuthenticatedAdminBillingRoute
+  '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/events/new': typeof AuthenticatedEventsNewRoute
   '/_authenticated/groups/$groupId': typeof AuthenticatedGroupsGroupIdRoute
   '/_authenticated/manage/dashboard': typeof AuthenticatedManageDashboardRoute
   '/_authenticated/manage/members': typeof AuthenticatedManageMembersRoute
   '/_authenticated/manage/settings': typeof AuthenticatedManageSettingsRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/manage/': typeof AuthenticatedManageIndexRoute
 }
 export interface FileRouteTypes {
@@ -227,6 +293,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/signup'
+    | '/admin'
     | '/dashboard'
     | '/events'
     | '/groups'
@@ -236,12 +303,18 @@ export interface FileRouteTypes {
     | '/profile'
     | '/scan'
     | '/tickets'
+    | '/admin/audit'
+    | '/admin/billing'
+    | '/admin/dashboard'
+    | '/admin/settings'
+    | '/admin/tenants'
     | '/events/$eventId'
     | '/events/new'
     | '/groups/$groupId'
     | '/manage/dashboard'
     | '/manage/members'
     | '/manage/settings'
+    | '/admin/'
     | '/manage/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -258,12 +331,18 @@ export interface FileRouteTypes {
     | '/profile'
     | '/scan'
     | '/tickets'
+    | '/admin/audit'
+    | '/admin/billing'
+    | '/admin/dashboard'
+    | '/admin/settings'
+    | '/admin/tenants'
     | '/events/$eventId'
     | '/events/new'
     | '/groups/$groupId'
     | '/manage/dashboard'
     | '/manage/members'
     | '/manage/settings'
+    | '/admin'
     | '/manage'
   id:
     | '__root__'
@@ -273,6 +352,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/signup'
+    | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/events'
     | '/_authenticated/groups'
@@ -282,12 +362,18 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/scan'
     | '/_authenticated/tickets'
+    | '/_authenticated/admin/audit'
+    | '/_authenticated/admin/billing'
+    | '/_authenticated/admin/dashboard'
+    | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/tenants'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/events/new'
     | '/_authenticated/groups/$groupId'
     | '/_authenticated/manage/dashboard'
     | '/_authenticated/manage/members'
     | '/_authenticated/manage/settings'
+    | '/_authenticated/admin/'
     | '/_authenticated/manage/'
   fileRoutesById: FileRoutesById
 }
@@ -407,12 +493,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/manage/': {
       id: '/_authenticated/manage/'
       path: '/'
       fullPath: '/manage/'
       preLoaderRoute: typeof AuthenticatedManageIndexRouteImport
       parentRoute: typeof AuthenticatedManageRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/manage/settings': {
       id: '/_authenticated/manage/settings'
@@ -456,8 +556,64 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEventsEventIdRouteImport
       parentRoute: typeof AuthenticatedEventsRoute
     }
+    '/_authenticated/admin/tenants': {
+      id: '/_authenticated/admin/tenants'
+      path: '/tenants'
+      fullPath: '/admin/tenants'
+      preLoaderRoute: typeof AuthenticatedAdminTenantsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/dashboard': {
+      id: '/_authenticated/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/billing': {
+      id: '/_authenticated/admin/billing'
+      path: '/billing'
+      fullPath: '/admin/billing'
+      preLoaderRoute: typeof AuthenticatedAdminBillingRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
+
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+  AuthenticatedAdminBillingRoute: typeof AuthenticatedAdminBillingRoute
+  AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminTenantsRoute: typeof AuthenticatedAdminTenantsRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+  AuthenticatedAdminBillingRoute: AuthenticatedAdminBillingRoute,
+  AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminTenantsRoute: AuthenticatedAdminTenantsRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedEventsRouteChildren {
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
@@ -501,6 +657,7 @@ const AuthenticatedManageRouteWithChildren =
   AuthenticatedManageRoute._addFileChildren(AuthenticatedManageRouteChildren)
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRouteWithChildren
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRouteWithChildren
@@ -513,6 +670,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEventsRoute: AuthenticatedEventsRouteWithChildren,
   AuthenticatedGroupsRoute: AuthenticatedGroupsRouteWithChildren,
@@ -539,13 +697,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

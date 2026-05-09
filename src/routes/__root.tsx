@@ -12,6 +12,8 @@ import appCss from "../styles.css?url";
 import { TenantProvider } from "@/lib/tenant-context";
 import { TenantThemeBridge } from "@/lib/theme/TenantThemeBridge";
 import { AuthProvider } from "@/lib/auth-context";
+import { ImpersonationProvider } from "@/lib/impersonation";
+import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -91,8 +93,11 @@ function RootComponent() {
       <TenantProvider>
         <TenantThemeBridge>
           <AuthProvider>
-            <Outlet />
-            <Toaster />
+            <ImpersonationProvider>
+              <ImpersonationBanner />
+              <Outlet />
+              <Toaster />
+            </ImpersonationProvider>
           </AuthProvider>
         </TenantThemeBridge>
       </TenantProvider>
