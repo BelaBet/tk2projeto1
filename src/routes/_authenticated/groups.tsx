@@ -55,17 +55,7 @@ function GroupsPage() {
           <p className="text-sm text-muted-foreground">Comunidades dentro do seu tenant</p>
         </div>
       </div>
-      </div>
 
-      {showForm && isStaff && (
-        <Card className="p-4">
-          <form onSubmit={createGroup} className="space-y-3">
-            <Input placeholder="Nome do grupo" value={name} onChange={(e) => setName(e.target.value)} required />
-            <Textarea placeholder="Descrição (opcional)" value={description} onChange={(e) => setDescription(e.target.value)} />
-            <Button type="submit">Criar</Button>
-          </form>
-        </Card>
-      )}
 
       {loading ? (
         <p className="text-muted-foreground">Carregando...</p>
