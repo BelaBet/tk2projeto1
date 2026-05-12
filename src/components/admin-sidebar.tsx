@@ -20,15 +20,15 @@ export function AdminSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b bg-zinc-950 text-zinc-100">
+      <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-2 py-1">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-zinc-950">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-accent-foreground">
             <ShieldAlert className="h-4 w-4" />
           </div>
           {!collapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="font-display text-sm">ERP Plataforma</span>
-              <span className="text-[10px] uppercase tracking-wider text-amber-400">Super Admin</span>
+              <span className="font-display text-sm">Painel da Plataforma</span>
+              <span className="text-[10px] uppercase tracking-wider text-accent">Super Admin</span>
             </div>
           )}
         </div>

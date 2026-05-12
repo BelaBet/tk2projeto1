@@ -22,11 +22,11 @@ function ManageLayout() {
     <SidebarProvider>
       <div className="flex min-h-[calc(100vh-4rem)] w-full -mx-6 -my-8">
         <ManagerSidebar />
-        <div className="flex-1 flex flex-col">
-          <header className="h-12 flex items-center border-b bg-card/60 backdrop-blur">
+        <div className="flex flex-1 flex-col">
+          <header className="flex h-12 items-center border-b bg-card/60 backdrop-blur">
             <SidebarTrigger className="ml-2" />
           </header>
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-4 sm:p-6">
             <Outlet />
           </main>
         </div>
