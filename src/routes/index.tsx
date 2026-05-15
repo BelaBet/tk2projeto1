@@ -505,8 +505,15 @@ function PixDialog({ open, onClose, pixKey, primary }: { open: boolean; onClose:
     toast.success("Chave copiada");
     setTimeout(() => setCopied(false), 1500);
   };
+  const qrPayload = encodeURIComponent(`PIX|${key}|${amount || "0"}`);
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${qrPayload}`;
   return (
-    <PaymentDialogShell open={open} onClose={onClose} title="Transferência Pix" description="Envie em segundos para qualquer chave.">
+    <PaymentDialogShell open={open} onClose={onClose} title="Transferência Pix" description="Escaneie o QR Code ou copie a chave.">
+      <div className="flex justify-center">
+        <div className="rounded-2xl border bg-white p-3 shadow-sm" style={{ borderColor: `${primary}26` }}>
+          <img src={qrSrc} alt="QR Code Pix" width={220} height={220} className="h-[220px] w-[220px]" />
+        </div>
+      </div>
       <div className="space-y-2">
         <Label htmlFor="pix-key">Chave Pix</Label>
         <div className="flex gap-2">
