@@ -65,11 +65,11 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-8"
+        className="relative my-auto flex w-full max-w-md flex-col rounded-2xl bg-white p-6 shadow-2xl sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button
