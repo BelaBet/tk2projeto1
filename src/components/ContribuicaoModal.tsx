@@ -82,6 +82,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
     valor: number;
     paymentId?: string;
     donationId?: string;
+    pdfUrl?: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -126,8 +127,6 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
     const num = override ?? Number(value);
     if (!num || num <= 0) return;
     if (isBoleto) {
-      const code = generateBoletoCode(num);
-      const due = addBusinessDays(new Date(), 3);
       if (!tenant?.id) {
         setError("Não foi possível identificar a instituição.");
         return;
@@ -135,14 +134,19 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
       setSubmitting(true);
       setError(null);
       try {
-        const { paymentId, donationId } = await createPayment({
-          data: {
-            tenantId: tenant.id,
-            amount: num,
-            gatewayId: code.replace(/\s|\./g, ""),
-          },
+        const result = await createPayment({
+          data: { tenantId: tenant.id, amount: num },
         });
-        setBoleto({ code, due, valor: num, paymentId, donationId });
+        const due = result.dueAt ? new Date(result.dueAt) : addBusinessDays(new Date(), 3);
+        const code = result.line || generateBoletoCode(num);
+        setBoleto({
+          code,
+          due,
+          valor: num,
+          paymentId: result.paymentId,
+          donationId: result.donationId,
+          pdfUrl: result.pdfUrl,
+        });
         onConfirm?.(num);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Erro ao gerar boleto");
@@ -154,6 +158,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
     onConfirm?.(num);
     onClose();
   };
+
 
   const handleCopy = async () => {
     if (!boleto) return;
@@ -168,6 +173,11 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
 
   const handleDownloadPdf = () => {
     if (!boleto) return;
+    if (boleto.pdfUrl) {
+      window.open(boleto.pdfUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
 
     const beneficiario = tenant?.name ?? "Beneficiário";
     const valorFmt = `R$ ${boleto.valor.toFixed(2).replace(".", ",")}`;
