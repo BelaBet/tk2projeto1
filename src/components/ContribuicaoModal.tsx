@@ -6,7 +6,7 @@ import JsBarcode from "jsbarcode";
 import { useServerFn } from "@tanstack/react-start";
 import { useTenant } from "@/lib/tenant-context";
 import { createBoletoPayment } from "@/lib/boleto.functions";
-import { createPixPayment, createCreditCardPayment } from "@/lib/payments.functions";
+import { createPixPayment, createCreditCardPayment, pollPixCharge } from "@/lib/payments.functions";
 
 export type ContribMethod = {
   key: "pix" | "boleto" | "fatura" | "mais" | "custom";
@@ -96,6 +96,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
   const { tenant } = useTenant();
   const createBoleto = useServerFn(createBoletoPayment);
   const createPix = useServerFn(createPixPayment);
+  const pollPix = useServerFn(pollPixCharge);
   const createCard = useServerFn(createCreditCardPayment);
   const [selected, setSelected] = useState<number | "custom">(25);
   const [value, setValue] = useState<string>("25");
@@ -128,6 +129,9 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
     valor: number;
     expiresAt: Date;
     paymentId?: string;
+    gatewayId?: string;
+    status?: "pending" | "paid" | "failed";
+    waiting?: boolean;
   } | null>(null);
   const [cardResult, setCardResult] = useState<{
     status: "pending" | "confirmed" | "failed";
@@ -171,6 +175,53 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
       setError(null);
     }
   }, [isOpen]);
+
+  // Polling do PIX: quando temos gatewayId e ainda falta o QR Code (ou status pendente),
+  // consultamos a Pagar.me a cada 3s até obter o código ou confirmação de pagamento.
+  useEffect(() => {
+    if (!pix?.gatewayId) return;
+    if (pix.status && pix.status !== "pending") return;
+    if (pix.code && !pix.waiting) return;
+
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 40; // ~2 minutos
+
+    const tick = async () => {
+      if (cancelled) return;
+      attempts++;
+      try {
+        const r = await pollPix({ data: { gatewayId: pix.gatewayId! } });
+        if (cancelled) return;
+        const paid = r.chargeStatus === "paid";
+        const failed = r.chargeStatus === "failed" || r.chargeStatus === "refused";
+        setPix((prev) =>
+          prev
+            ? {
+                ...prev,
+                code: r.qrCode || prev.code,
+                qrUrl: r.qrCodeUrl || prev.qrUrl,
+                expiresAt: r.expiresAt ? new Date(r.expiresAt) : prev.expiresAt,
+                waiting: !r.qrCode && !paid,
+                status: paid ? "paid" : failed ? "failed" : "pending",
+              }
+            : prev,
+        );
+        if (paid || failed) return;
+      } catch {
+        /* tenta de novo */
+      }
+      if (attempts < maxAttempts && !cancelled) {
+        setTimeout(tick, 3000);
+      }
+    };
+
+    const t = setTimeout(tick, 2000);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [pix?.gatewayId, pix?.code, pix?.waiting, pix?.status, pollPix]);
 
   if (!isOpen) return null;
 
@@ -274,13 +325,16 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
           },
         });
 
-        if (!result.qrCode) throw new Error("PIX não retornou código. Verifique a configuração da Pagar.me.");
+        if (!result.gatewayId) throw new Error("Pagar.me não retornou identificador do pedido.");
         setPix({
-          code: result.qrCode,
-          qrUrl: result.qrCodeUrl,
+          code: result.qrCode || "",
+          qrUrl: result.qrCodeUrl || "",
           valor: num,
-          expiresAt: new Date(result.expiresAt),
+          expiresAt: new Date(result.expiresAt || Date.now() + 60 * 60 * 1000),
           paymentId: result.paymentId,
+          gatewayId: result.gatewayId,
+          status: "pending",
+          waiting: !result.qrCode,
         });
       } else if (isCard) {
         // Validate card
@@ -539,58 +593,95 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
 
         {pix ? (
           <>
-            <h2 className="mt-1 text-[24px] font-bold leading-tight text-[#111827]">PIX gerado</h2>
-            <p className="mt-1 text-sm text-[#6B7280]">
-              Abra o app do seu banco, escolha pagar com PIX e escaneie o QR Code ou cole o código.
-            </p>
+            {pix.status === "paid" ? (
+              <div className="mt-1 flex flex-col items-center text-center">
+                <CheckCircle2 className="h-14 w-14 text-emerald-500" />
+                <h2 className="mt-3 text-[24px] font-bold text-[#111827]">Pagamento confirmado</h2>
+                <p className="mt-1 text-sm text-[#6B7280]">
+                  Recebemos sua contribuição de R$ {pix.valor.toFixed(2).replace(".", ",")}.
+                </p>
+                <button
+                  onClick={onClose}
+                  className="mt-6 flex h-[48px] w-full items-center justify-center rounded-full bg-[#7C3AED] text-sm font-semibold text-white hover:bg-[#6D28D9]"
+                >
+                  Fechar
+                </button>
+              </div>
+            ) : (
+              <>
+                <h2 className="mt-1 text-[24px] font-bold leading-tight text-[#111827]">
+                  {pix.waiting ? "Gerando seu PIX…" : "PIX gerado"}
+                </h2>
+                <p className="mt-1 text-sm text-[#6B7280]">
+                  {pix.waiting
+                    ? "Aguardando a Pagar.me liberar o QR Code. Isso costuma levar alguns segundos."
+                    : "Abra o app do seu banco, escolha pagar com PIX e escaneie o QR Code ou cole o código."}
+                </p>
 
-            <div className="mt-5 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
-              <div className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Valor</div>
-              <div className="mt-0.5 text-2xl font-bold text-[#111827]">
-                R$ {pix.valor.toFixed(2).replace(".", ",")}
-              </div>
-              <div className="mt-3 text-xs font-medium uppercase tracking-wide text-[#6B7280]">Expira em</div>
-              <div className="mt-0.5 text-sm font-semibold text-[#111827]">
-                {pix.expiresAt.toLocaleString("pt-BR")}
-              </div>
-            </div>
+                <div className="mt-5 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Valor</div>
+                  <div className="mt-0.5 text-2xl font-bold text-[#111827]">
+                    R$ {pix.valor.toFixed(2).replace(".", ",")}
+                  </div>
+                  <div className="mt-3 text-xs font-medium uppercase tracking-wide text-[#6B7280]">Expira em</div>
+                  <div className="mt-0.5 text-sm font-semibold text-[#111827]">
+                    {pix.expiresAt.toLocaleString("pt-BR")}
+                  </div>
+                </div>
 
-            {pix.qrUrl && (
-              <div className="mt-4 flex justify-center">
-                <img
-                  src={pix.qrUrl}
-                  alt="QR Code PIX"
-                  className="h-56 w-56 rounded-xl border border-[#E5E7EB] bg-white p-2"
-                />
-              </div>
+                {pix.waiting ? (
+                  <div className="mt-4 flex h-56 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[#E5E7EB] bg-[#F9FAFB] text-[#6B7280]">
+                    <Loader2 className="h-8 w-8 animate-spin text-[#7C3AED]" />
+                    <p className="text-xs">Aguardando confirmação da Pagar.me…</p>
+                  </div>
+                ) : pix.qrUrl ? (
+                  <div className="mt-4 flex justify-center">
+                    <img
+                      src={pix.qrUrl}
+                      alt="QR Code PIX"
+                      className="h-56 w-56 rounded-xl border border-[#E5E7EB] bg-white p-2"
+                    />
+                  </div>
+                ) : null}
+
+                {pix.code && (
+                  <div className="mt-4">
+                    <div className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
+                      PIX Copia e Cola
+                    </div>
+                    <div className="mt-1 break-all rounded-xl border border-[#E5E7EB] bg-white p-3 font-mono text-[12px] text-[#111827]">
+                      {pix.code}
+                    </div>
+                  </div>
+                )}
+
+                {pix.code && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(pix.code);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      } catch { /* noop */ }
+                    }}
+                    className="mt-3 flex h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#7C3AED] text-sm font-semibold text-white transition hover:bg-[#6D28D9]"
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    {copied ? "Código copiado" : "Copiar código PIX"}
+                  </button>
+                )}
+
+                {pix.status === "failed" && (
+                  <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                    A cobrança foi recusada pela operadora. Tente novamente.
+                  </div>
+                )}
+
+                <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-[#6B7280]">
+                  <Lock className="h-3.5 w-3.5" /> Pagamento 100% seguro
+                </div>
+              </>
             )}
-
-            <div className="mt-4">
-              <div className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
-                PIX Copia e Cola
-              </div>
-              <div className="mt-1 break-all rounded-xl border border-[#E5E7EB] bg-white p-3 font-mono text-[12px] text-[#111827]">
-                {pix.code}
-              </div>
-            </div>
-
-            <button
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(pix.code);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                } catch { /* noop */ }
-              }}
-              className="mt-3 flex h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#7C3AED] text-sm font-semibold text-white transition hover:bg-[#6D28D9]"
-            >
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? "Código copiado" : "Copiar código PIX"}
-            </button>
-
-            <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-[#6B7280]">
-              <Lock className="h-3.5 w-3.5" /> Pagamento 100% seguro
-            </div>
           </>
         ) : cardResult ? (
           <>

@@ -176,19 +176,22 @@ export const createPixPayment = createServerFn({ method: "POST" })
     const expiresAt: string = tx?.expires_at ?? new Date(Date.now() + expiresIn * 1000).toISOString();
     const gatewayId: string = json?.id ?? charge?.id ?? "";
 
+    if (!gatewayId) {
+      console.error("[pix] resposta sem gatewayId", { json });
+      throw new Error(
+        `Pagar.me não retornou identificador do pedido. Status: ${json?.status ?? "?"}. ` +
+        `Verifique a configuração da conta (recebedor/chave PIX).`
+      );
+    }
+
     if (!qrCode) {
-      console.error("[pix] resposta sem qr_code", {
+      // QR ainda não disponível: persistimos pending e o cliente fará polling
+      // até o webhook/processamento async gerar o código.
+      console.warn("[pix] QR Code ainda não disponível na criação", {
         orderStatus: json?.status,
         chargeStatus: charge?.status,
         txStatus: tx?.status,
-        gatewayMessage: tx?.gateway_response?.errors ?? tx?.acquirer_message ?? null,
-        rawCharge: charge,
       });
-      throw new Error(
-        `Pagar.me não retornou QR Code do PIX. Status do pedido: ${json?.status ?? "?"}, ` +
-        `da cobrança: ${charge?.status ?? "?"}. ` +
-        `Verifique se a chave PAGARME_SECRET_KEY é uma secret key (sk_) e se há uma chave PIX/recebedor configurado na conta Pagar.me.`
-      );
     }
 
     const ids = await persistPayment({
@@ -199,7 +202,62 @@ export const createPixPayment = createServerFn({ method: "POST" })
       gatewayId,
     });
 
-    return { ...ids, qrCode, qrCodeUrl, expiresAt, gatewayId };
+    return {
+      ...ids,
+      qrCode,
+      qrCodeUrl,
+      expiresAt,
+      gatewayId,
+      pending: !qrCode,
+    };
+  });
+
+const PollInput = z.object({
+  gatewayId: z.string().min(3).max(64),
+});
+
+export const pollPixCharge = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => PollInput.parse(data))
+  .handler(async ({ data }) => {
+    const secretKey = process.env.PAGARME_SECRET_KEY;
+    if (!secretKey) throw new Error("PAGARME_SECRET_KEY não configurada");
+    const auth = "Basic " + Buffer.from(`${secretKey}:`).toString("base64");
+
+    const res = await fetch(
+      `https://api.pagar.me/core/v5/orders/${encodeURIComponent(data.gatewayId)}`,
+      { method: "GET", headers: { Authorization: auth } },
+    );
+    const raw = await res.text();
+    let json: any;
+    try { json = JSON.parse(raw); } catch {
+      throw new Error(`Resposta inválida da Pagar.me: ${raw.slice(0, 200)}`);
+    }
+    if (!res.ok) {
+      throw new Error(json?.message || `Erro ${res.status} ao consultar pedido`);
+    }
+
+    const charge = json?.charges?.[0];
+    const tx = charge?.last_transaction;
+    const qrCode: string = tx?.qr_code ?? "";
+    const qrCodeUrl: string = tx?.qr_code_url ?? "";
+    const expiresAt: string = tx?.expires_at ?? "";
+    const orderStatus: string = json?.status ?? "";
+    const chargeStatus: string = charge?.status ?? "";
+
+    const mapped: "paid" | "failed" | null =
+      chargeStatus === "paid" ? "paid"
+      : chargeStatus === "failed" || chargeStatus === "refused" ? "failed"
+      : null;
+
+    if (mapped) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .from("payments")
+        .update({ status: mapped as any })
+        .eq("gateway_id", data.gatewayId);
+    }
+
+    return { qrCode, qrCodeUrl, expiresAt, orderStatus, chargeStatus };
   });
 
 export const createCreditCardPayment = createServerFn({ method: "POST" })
