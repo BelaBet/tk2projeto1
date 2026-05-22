@@ -781,7 +781,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
                 )}
 
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">Nome completo</label>
+                  <label className="text-xs font-medium text-[#6B7280]">Nome completo{isPix && " (opcional)"}</label>
                   <input
                     type="text"
                     value={payerName}
@@ -792,7 +792,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">E-mail</label>
+                  <label className="text-xs font-medium text-[#6B7280]">E-mail{isPix && " (opcional)"}</label>
                   <input
                     type="email"
                     value={payerEmail}
@@ -803,7 +803,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">CPF</label>
+                  <label className="text-xs font-medium text-[#6B7280]">CPF{isPix && " (opcional)"}</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -814,7 +814,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">Celular (WhatsApp)</label>
+                  <label className="text-xs font-medium text-[#6B7280]">Celular (WhatsApp){isPix && " (opcional)"}</label>
                   <input
                     type="tel"
                     inputMode="numeric"
