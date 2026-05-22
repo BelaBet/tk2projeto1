@@ -486,6 +486,11 @@ function PaymentsQuickActions({ primary, accent, pixKey }: { primary: string; ac
         method={contribKey ? { key: contribKey, label: contribLabel } : undefined}
         onConfirm={(valor) => {
           const k = contribKey;
+          if (k === "boleto") {
+            // O próprio ContribuicaoModal já exibe o boleto gerado — sem 2º modal.
+            toast.success(`Valor selecionado: R$${valor}`);
+            return;
+          }
           setContribKey(null);
           if (k) {
             toast.success(`Valor selecionado: R$${valor}`);
@@ -495,7 +500,6 @@ function PaymentsQuickActions({ primary, accent, pixKey }: { primary: string; ac
       />
 
       <PixDialog open={methodOpen === "pix"} onClose={() => setMethodOpen(null)} pixKey={pixKey} primary={primary} />
-      <BoletoDialog open={methodOpen === "boleto"} onClose={() => setMethodOpen(null)} primary={primary} />
       <FaturaDialog open={methodOpen === "fatura"} onClose={() => setMethodOpen(null)} primary={primary} />
       <MaisDialog open={methodOpen === "mais"} onClose={() => setMethodOpen(null)} onPick={(k) => setMethodOpen(k)} />
     </>
