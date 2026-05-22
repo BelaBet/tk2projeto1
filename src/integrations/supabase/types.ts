@@ -947,7 +947,7 @@ export type Database = {
       message_channel: "sms" | "whatsapp" | "in_app"
       message_status: "queued" | "sent" | "failed"
       message_target_type: "individual" | "group" | "broadcast"
-      payment_method: "pix" | "credit_card" | "debit_card"
+      payment_method: "pix" | "credit_card" | "debit_card" | "boleto"
       payment_ref_type: "ticket" | "donation"
       payment_status: "pending" | "confirmed" | "failed" | "refunded"
       platform_role: "super_admin" | "support" | "finance" | "operator"
@@ -1101,7 +1101,7 @@ export const Constants = {
       message_channel: ["sms", "whatsapp", "in_app"],
       message_status: ["queued", "sent", "failed"],
       message_target_type: ["individual", "group", "broadcast"],
-      payment_method: ["pix", "credit_card", "debit_card"],
+      payment_method: ["pix", "credit_card", "debit_card", "boleto"],
       payment_ref_type: ["ticket", "donation"],
       payment_status: ["pending", "confirmed", "failed", "refunded"],
       platform_role: ["super_admin", "support", "finance", "operator"],
