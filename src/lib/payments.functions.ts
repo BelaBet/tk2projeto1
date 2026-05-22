@@ -8,6 +8,14 @@ const CustomerSchema = {
   customerPhone: z.string().min(10).max(20),
 };
 
+const OptionalCustomerSchema = {
+  customerName: z.string().min(2).max(120).optional(),
+  customerEmail: z.string().email().optional(),
+  customerDocument: z.string().min(8).max(20).optional(),
+  customerPhone: z.string().min(10).max(20).optional(),
+};
+
+
 function parseBrPhone(raw: string) {
   const digits = raw.replace(/\D/g, "");
   // Aceita 10 (fixo) ou 11 (celular) dígitos; opcional 55 country
@@ -18,21 +26,22 @@ function parseBrPhone(raw: string) {
 }
 
 function buildCustomer(data: {
-  customerName: string;
-  customerEmail: string;
-  customerDocument: string;
-  customerPhone: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerDocument?: string;
+  customerPhone?: string;
 }) {
-  const phone = parseBrPhone(data.customerPhone);
+  const phone = parseBrPhone(data.customerPhone ?? "11900000000");
   return {
-    name: data.customerName,
-    email: data.customerEmail,
+    name: data.customerName ?? "Contribuinte Anônimo",
+    email: data.customerEmail ?? "contribuinte@anonimo.com",
     type: "individual",
-    document: data.customerDocument.replace(/\D/g, ""),
+    document: (data.customerDocument ?? "00000000000").replace(/\D/g, ""),
     document_type: "CPF",
     phones: { mobile_phone: phone },
   };
 }
+
 
 function buildItems(amountCents: number) {
   return [
@@ -48,8 +57,9 @@ function buildItems(amountCents: number) {
 const PixInput = z.object({
   tenantId: z.string().uuid(),
   amount: z.number().positive().max(1_000_000),
-  ...CustomerSchema,
+  ...OptionalCustomerSchema,
 });
+
 
 const CardInput = z.object({
   tenantId: z.string().uuid(),
@@ -153,7 +163,7 @@ export const createPixPayment = createServerFn({ method: "POST" })
           payment_method: "pix",
           pix: {
             expires_in: expiresIn,
-            additional_information: [{ name: "Contribuição", value: data.customerName }],
+            additional_information: [{ name: "Contribuição", value: data.customerName ?? "Anônimo" }],
           },
         },
       ],

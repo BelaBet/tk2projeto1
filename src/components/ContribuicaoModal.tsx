@@ -192,11 +192,17 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
     setSelected(PRESETS.includes(num) ? num : "custom");
   };
 
-  const validatePayer = (): { name: string; email: string; cpf: string; phone: string } | null => {
+  const validatePayer = (
+    opts: { optional?: boolean } = {},
+  ): { name: string; email: string; cpf: string; phone: string } | null => {
     const name = payerName.trim();
     const email = payerEmail.trim();
     const cpfDigits = payerCpf.replace(/\D/g, "");
     const phoneDigits = payerPhone.replace(/\D/g, "");
+    const allEmpty = !name && !email && !cpfDigits && !phoneDigits;
+    if (opts.optional && allEmpty) {
+      return { name: "", email: "", cpf: "", phone: "" };
+    }
     if (name.length < 2) {
       setError("Informe o nome completo do pagador.");
       return null;
@@ -216,6 +222,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
     return { name, email, cpf: cpfDigits, phone: phoneDigits };
   };
 
+
   const handleConfirm = async (override?: number) => {
     const num = override ?? Number(value);
     if (!num || num <= 0) return;
@@ -228,8 +235,9 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
       setError("Não foi possível identificar a instituição.");
       return;
     }
-    const payer = validatePayer();
+    const payer = validatePayer({ optional: isPix });
     if (!payer) return;
+
 
     setSubmitting(true);
     setError(null);
@@ -259,12 +267,13 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
           data: {
             tenantId: tenant.id,
             amount: num,
-            customerName: payer.name,
-            customerEmail: payer.email,
-            customerDocument: payer.cpf,
-            customerPhone: payer.phone,
+            ...(payer.name ? { customerName: payer.name } : {}),
+            ...(payer.email ? { customerEmail: payer.email } : {}),
+            ...(payer.cpf ? { customerDocument: payer.cpf } : {}),
+            ...(payer.phone ? { customerPhone: payer.phone } : {}),
           },
         });
+
         if (!result.qrCode) throw new Error("PIX não retornou código. Verifique a configuração da Pagar.me.");
         setPix({
           code: result.qrCode,
@@ -764,8 +773,15 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
 
             {needsPayer && (
               <div className="mt-5 space-y-2.5">
+                {isPix && (
+                  <p className="text-xs text-[#6B7280]">
+                    Dados do pagador são opcionais no Pix. Preencha o celular se quiser
+                    receber a confirmação por WhatsApp.
+                  </p>
+                )}
+
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">Nome completo</label>
+                  <label className="text-xs font-medium text-[#6B7280]">Nome completo{isPix && " (opcional)"}</label>
                   <input
                     type="text"
                     value={payerName}
@@ -776,7 +792,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">E-mail</label>
+                  <label className="text-xs font-medium text-[#6B7280]">E-mail{isPix && " (opcional)"}</label>
                   <input
                     type="email"
                     value={payerEmail}
@@ -787,7 +803,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">CPF</label>
+                  <label className="text-xs font-medium text-[#6B7280]">CPF{isPix && " (opcional)"}</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -798,7 +814,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">Celular (WhatsApp)</label>
+                  <label className="text-xs font-medium text-[#6B7280]">Celular (WhatsApp){isPix && " (opcional)"}</label>
                   <input
                     type="tel"
                     inputMode="numeric"
