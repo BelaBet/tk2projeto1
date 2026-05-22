@@ -359,6 +359,40 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
               <div className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
                 Linha digitável
               </div>
+            <div className="mt-5 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+              <div className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
+                Instituição beneficiária
+              </div>
+              <div className="mt-0.5 text-sm font-semibold text-[#111827]">
+                {tenant?.name ?? "—"}
+              </div>
+              {tenant?.slug && (
+                <div className="text-xs text-[#6B7280]">@{tenant.slug}</div>
+              )}
+              <div className="mt-3 grid grid-cols-1 gap-2 text-xs">
+                <div>
+                  <div className="font-medium uppercase tracking-wide text-[#6B7280]">
+                    ID do pagamento
+                  </div>
+                  <div className="break-all font-mono text-[#111827]">
+                    {boleto.paymentId ?? "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className="font-medium uppercase tracking-wide text-[#6B7280]">
+                    ID da doação
+                  </div>
+                  <div className="break-all font-mono text-[#111827]">
+                    {boleto.donationId ?? "—"}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
+                Linha digitável
+              </div>
               <div className="mt-1 break-all rounded-xl border border-[#E5E7EB] bg-white p-3 font-mono text-[13px] text-[#111827]">
                 {boleto.code}
               </div>
