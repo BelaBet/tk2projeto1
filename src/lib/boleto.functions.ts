@@ -7,7 +7,14 @@ const InputSchema = z.object({
   customerName: z.string().min(1).max(120).optional(),
   customerEmail: z.string().email().optional(),
   customerDocument: z.string().min(8).max(20).optional(),
+  customerPhone: z.string().min(10).max(20).optional(),
 });
+
+function parseBrPhone(raw: string) {
+  const digits = raw.replace(/\D/g, "");
+  const local = digits.startsWith("55") && digits.length > 11 ? digits.slice(2) : digits;
+  return { country_code: "55", area_code: local.slice(0, 2), number: local.slice(2) };
+}
 
 function addBusinessDays(date: Date, days: number) {
   const d = new Date(date);
