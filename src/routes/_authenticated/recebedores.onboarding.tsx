@@ -466,12 +466,12 @@ function OnboardingPage() {
             )}
 
             {/* Nav */}
-            <div className="flex items-center justify-between gap-3 border-t border-[#2a2a36] pt-6">
+            <div className="flex items-center justify-between gap-3 border-t border-border pt-6">
               <button
                 type="button"
                 onClick={prev}
                 disabled={currentIndex === 0 || submitting}
-                className="flex items-center gap-1.5 rounded-md border border-[#2a2a36] bg-transparent px-4 py-2.5 text-sm text-[#A9A9B8] transition hover:border-[#3a3a46] hover:text-[#EDEDF2] disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex items-center gap-1.5 rounded-md border border-input bg-transparent px-4 py-2.5 text-sm text-muted-foreground transition hover:border-ring/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ChevronLeft className="h-4 w-4" /> Voltar
               </button>
@@ -480,7 +480,7 @@ function OnboardingPage() {
                 <button
                   type="button"
                   onClick={next}
-                  className="flex items-center gap-1.5 rounded-md bg-gradient-to-r from-[#C9A84C] to-[#E6CB7E] px-5 py-2.5 text-sm font-semibold text-[#0A0A0F] shadow-[0_4px_20px_-4px_rgba(201,168,76,0.45)] transition hover:brightness-110"
+                  className="flex items-center gap-1.5 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
                 >
                   Próximo <ChevronRight className="h-4 w-4" />
                 </button>
@@ -488,7 +488,7 @@ function OnboardingPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex items-center gap-2 rounded-md bg-gradient-to-r from-[#C9A84C] to-[#E6CB7E] px-5 py-2.5 text-sm font-semibold text-[#0A0A0F] shadow-[0_4px_20px_-4px_rgba(201,168,76,0.45)] transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
+                  className="flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:cursor-wait disabled:opacity-70"
                 >
                   {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
                   {submitting ? "Cadastrando..." : "Confirmar e cadastrar"}
