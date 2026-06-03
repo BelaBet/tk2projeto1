@@ -481,7 +481,12 @@ function OnboardingPage() {
                 <button
                   type="button"
                   onClick={next}
-                  className="flex items-center gap-1.5 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+                  disabled={
+                    (currentKey === "ident" && !!errors.document) ||
+                    (currentKey === "empresa" && (!!errors.company_name || !!errors.company_email)) ||
+                    (currentKey === "socio" && !!errors.partners)
+                  }
+                  className="flex items-center gap-1.5 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Próximo <ChevronRight className="h-4 w-4" />
                 </button>
