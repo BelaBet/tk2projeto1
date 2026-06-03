@@ -77,6 +77,7 @@ function NotificationsPage() {
                   {n.body && <p className="text-sm text-muted-foreground">{n.body}</p>}
                   <p className="mt-1 text-xs text-muted-foreground">
                     {new Date(n.created_at).toLocaleString("pt-BR")}
+                    <span className="ml-2 opacity-70">• Enviado por TicketConnect</span>
                   </p>
                 </div>
                 {!n.read && (
