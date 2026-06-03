@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin-sidebar";
+import { TenantSwitcher } from "@/components/tenant-switcher";
 import { useAuth } from "@/lib/auth-context";
 import { Card } from "@/components/ui/card";
 import { ShieldAlert } from "lucide-react";
