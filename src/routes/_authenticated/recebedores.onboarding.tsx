@@ -108,19 +108,19 @@ const STEPS = [
 // ─────────────────────────── UI primitives ───────────────────────────
 
 const fieldBase =
-  "w-full rounded-md border border-[#2a2a36] bg-[#13131A] px-3.5 py-2.5 text-sm text-[#EDEDF2] placeholder:text-[#5a5a6a] focus:outline-none focus:ring-2 focus:ring-[#C9A84C]/40 focus:border-[#C9A84C]/60 transition";
+  "w-full rounded-md border border-input bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition";
 
 function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
-    <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[#A9A9B8]">
-      {children} {required && <span className="text-[#C9A84C]">*</span>}
+    <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      {children} {required && <span className="text-primary">*</span>}
     </label>
   );
 }
 
 function ErrorMsg({ msg }: { msg?: string }) {
   if (!msg) return null;
-  return <p className="mt-1.5 text-xs text-[#E05C5C]">{msg}</p>;
+  return <p className="mt-1.5 text-xs text-destructive">{msg}</p>;
 }
 
 // ─────────────────────────── Page ───────────────────────────
