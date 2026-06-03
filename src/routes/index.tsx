@@ -838,27 +838,18 @@ function ChurchPage() {
         />
 
         <div className="fade-up relative mx-auto max-w-3xl flex flex-col items-center">
-          {/* Logo */}
+          {/* Logo — sempre iniciais */}
           <div className="mb-1 sm:mb-6">
-            {CHURCH.logo ? (
-              <img
-                src={CHURCH.logo}
-                alt={CHURCH.name}
-                className="mx-auto rounded-full object-cover w-11 h-11 sm:w-24 sm:h-24"
-                style={{ border: `2px solid ${accent}` }}
-              />
-            ) : (
-              <div
-                className="mx-auto grid place-items-center rounded-full w-11 h-11 sm:w-24 sm:h-24 text-sm sm:text-3xl font-extrabold"
-                style={{
-                  background: "#fff",
-                  color: primary,
-                  border: `2px solid ${accent}`,
-                }}
-              >
-                {initials(CHURCH.name)}
-              </div>
-            )}
+            <div
+              className="mx-auto grid place-items-center rounded-full w-11 h-11 sm:w-24 sm:h-24 text-sm sm:text-3xl font-extrabold"
+              style={{
+                background: "#fff",
+                color: primary,
+                border: `2px solid ${accent}`,
+              }}
+            >
+              {initials(CHURCH.name)}
+            </div>
           </div>
 
           {/* Church Name */}
