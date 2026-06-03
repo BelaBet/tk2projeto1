@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { ContribuicaoModal } from "@/components/ContribuicaoModal";
 import { QRCodeCanvas } from "qrcode.react";
 import { buildPixPayload } from "@/lib/pix";
+import { useTenant } from "@/lib/tenant-context";
 
 export const Route = createFileRoute("/")({
   component: ChurchPage,
@@ -41,14 +42,12 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-// ── Mock data (substituir por fetch do Supabase via tenant_id/slug) ──────────
-const CHURCH = {
+// ── Fallback data (sobrescrita pelos dados do tenant carregados via useTenant) ─
+const CHURCH_DEFAULTS = {
   name: "Igreja Comunidade da Graça",
   tagline: "Um lugar de fé, amor e comunidade",
-  logo: null as string | null,
   primaryColor: "#1a3a5c",
   accentColor: "#C9993A",
-  coverPhoto: null as string | null,
 };
 
 type EventItem = {
@@ -697,8 +696,17 @@ function MaisDialog({ open, onClose, onPick }: { open: boolean; onClose: () => v
 // ── MAIN PAGE ─────────────────────────────────────────────────────────────────
 function ChurchPage() {
   const [copied, setCopied] = useState(false);
-  
   const [scrolled, setScrolled] = useState(false);
+  const { tenant } = useTenant();
+  // CHURCH agora deriva dos dados do tenant cadastrado, com fallback para o mock.
+  const CHURCH = {
+    name: tenant?.name ?? CHURCH_DEFAULTS.name,
+    tagline: tenant?.tagline ?? CHURCH_DEFAULTS.tagline,
+    logo: tenant?.logo_url ?? null,
+    primaryColor: tenant?.primary_color ?? CHURCH_DEFAULTS.primaryColor,
+    accentColor: tenant?.secondary_color ?? CHURCH_DEFAULTS.accentColor,
+    coverPhoto: null as string | null,
+  };
   const primary = CHURCH.primaryColor;
   const accent = CHURCH.accentColor;
 

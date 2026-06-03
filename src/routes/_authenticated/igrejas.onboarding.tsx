@@ -1,20 +1,22 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Check, ChevronLeft, ChevronRight, Plus, Trash2, Loader2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Plus, Trash2, Loader2, Upload, Image as ImageIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { cpf, cnpj } from "cpf-cnpj-validator";
+import { useServerFn } from "@tanstack/react-start";
+import { updateChurchIdentity } from "@/lib/church.functions";
 
-export const Route = createFileRoute("/_authenticated/recebedores/onboarding")({
+export const Route = createFileRoute("/_authenticated/igrejas/onboarding")({
   component: OnboardingGate,
 });
 
 function OnboardingGate() {
-  const { user, profile, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
@@ -27,7 +29,7 @@ function OnboardingGate() {
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 text-2xl">✉</div>
           <h1 className="font-display text-2xl">Confirme seu e-mail</h1>
           <p className="mt-3 text-muted-foreground">
-            Você precisa confirmar seu e-mail antes de iniciar o onboarding de recebedor.
+            Você precisa confirmar seu e-mail antes de iniciar o cadastro da igreja.
           </p>
           <Button asChild variant="outline" className="mt-6"><Link to="/login">Voltar ao login</Link></Button>
         </div>
@@ -72,6 +74,8 @@ const partnerSchema = z.object({
 
 const schema = z
   .object({
+    church_name: z.string().trim().min(2, "Informe o nome da igreja").max(120),
+    church_tagline: z.string().trim().max(200).optional().or(z.literal("")),
     type: z.enum(["pj", "pf"]),
     document: z.string().min(1, "Informe o documento"),
     company_name: z.string().trim().max(160).optional().or(z.literal("")),
@@ -99,10 +103,11 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 const STEPS = [
-  { key: "ident", title: "Identificação" },
+  { key: "identidade", title: "Identidade" },
+  { key: "ident", title: "Documento" },
   { key: "empresa", title: "Empresa" },
   { key: "socio", title: "Sócio" },
-  { key: "receb", title: "Recebedor" },
+  { key: "receb", title: "Recebimento" },
   { key: "revisao", title: "Revisão" },
 ] as const;
 
@@ -130,11 +135,18 @@ function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const submitChurch = useServerFn(updateChurchIdentity);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     mode: "onBlur",
     defaultValues: {
+      church_name: "",
+      church_tagline: "",
       type: "pj",
       document: "",
       company_name: "",
@@ -149,6 +161,7 @@ function OnboardingPage() {
   const errors = formState.errors;
   const type = watch("type");
   const partners = watch("partners");
+  const churchName = watch("church_name");
 
   // Skip empresa step for PF
   const visibleSteps = useMemo(
@@ -159,8 +172,31 @@ function OnboardingPage() {
   const currentKey = visibleSteps[currentIndex].key;
   const progress = ((currentIndex + 1) / visibleSteps.length) * 100;
 
+  function onLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    setLogoError(null);
+    if (!file) {
+      setLogoFile(null);
+      setLogoPreview(null);
+      return;
+    }
+    if (!/^image\/(png|jpe?g|webp|svg\+xml)$/.test(file.type)) {
+      setLogoError("Use PNG, JPG, WEBP ou SVG.");
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      setLogoError("Tamanho máximo: 4 MB.");
+      return;
+    }
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setLogoPreview(typeof reader.result === "string" ? reader.result : null);
+    reader.readAsDataURL(file);
+  }
+
   async function next() {
     const fieldsByKey: Record<string, (keyof FormValues | `partners.${number}.${"full_name" | "cpf" | "email"}`)[]> = {
+      identidade: ["church_name", "church_tagline"],
       ident: ["type", "document"],
       empresa: ["company_name", "company_email"],
       socio: partners.flatMap((_, i) => [
@@ -197,15 +233,44 @@ function OnboardingPage() {
     );
   }
 
+  async function fileToBase64(file: File): Promise<string> {
+    const buf = await file.arrayBuffer();
+    let bin = "";
+    const bytes = new Uint8Array(buf);
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+
   const onSubmit = handleSubmit(async (values) => {
     setSubmitting(true);
     try {
-      // TODO: integrate Pagar.me v5 receiver creation here
-      await new Promise((r) => setTimeout(r, 900));
-      toast.success("Recebedor cadastrado com sucesso!");
-      router.navigate({ to: "/recebedores" });
-    } catch {
-      toast.error("Não foi possível concluir o cadastro. Tente novamente.");
+      const payload: {
+        name: string;
+        tagline: string;
+        logo?: { base64: string; contentType: string; filename: string };
+      } = {
+        name: values.church_name,
+        tagline: values.church_tagline || "",
+      };
+      if (logoFile) {
+        const base64 = await fileToBase64(logoFile);
+        payload.logo = {
+          base64,
+          contentType: logoFile.type,
+          filename: logoFile.name,
+        };
+      }
+      await submitChurch({ data: payload });
+      toast.success("Igreja cadastrada com sucesso!");
+      // Hard reload para que TenantProvider recarregue a nova identidade visual em /
+      if (typeof window !== "undefined") {
+        window.location.assign("/");
+      } else {
+        router.navigate({ to: "/" });
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Não foi possível concluir o cadastro.";
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -216,10 +281,10 @@ function OnboardingPage() {
       <div className="mx-auto w-full max-w-[640px]">
         <header className="mb-6 text-center">
           <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            Cadastro de Recebedor
+            Cadastro de Igreja
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Complete as etapas para habilitar o recebimento via Pagar.me.
+            Complete as etapas para configurar a identidade visual e habilitar o recebimento.
           </p>
         </header>
 
@@ -272,12 +337,76 @@ function OnboardingPage() {
           </ol>
 
           <form onSubmit={onSubmit} className="space-y-6">
-            {/* STEP: IDENT */}
+            {/* STEP: IDENTIDADE (logo + nome + tagline) */}
+            {currentKey === "identidade" && (
+              <div className="space-y-5">
+                <h2 className="text-lg font-medium text-foreground">Identidade visual da igreja</h2>
+                <p className="-mt-3 text-xs text-muted-foreground">
+                  A logo será aplicada imediatamente na página pública e no painel.
+                </p>
+
+                <div>
+                  <Label>Logo da igreja</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted">
+                      {logoPreview ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={logoPreview} alt="Pré-visualização da logo" className="h-full w-full object-cover" />
+                      ) : (
+                        <ImageIcon className="h-7 w-7 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                        onChange={onLogoChange}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="gap-2"
+                      >
+                        <Upload className="h-4 w-4" />
+                        {logoFile ? "Trocar imagem" : "Enviar logo"}
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground">PNG, JPG, WEBP ou SVG · até 4 MB</p>
+                    </div>
+                  </div>
+                  <ErrorMsg msg={logoError ?? undefined} />
+                </div>
+
+                <div>
+                  <Label required>Nome da igreja</Label>
+                  <input
+                    {...register("church_name")}
+                    className={`${fieldBase} ${errors.church_name ? "border-destructive ring-1 ring-destructive" : ""}`}
+                    placeholder="Ex: Igreja Comunidade da Graça"
+                  />
+                  <ErrorMsg msg={errors.church_name?.message} />
+                </div>
+                <div>
+                  <Label>Frase de apresentação</Label>
+                  <input
+                    {...register("church_tagline")}
+                    className={fieldBase}
+                    placeholder="Ex: Um lugar de fé, amor e comunidade"
+                  />
+                  <ErrorMsg msg={errors.church_tagline?.message} />
+                </div>
+              </div>
+            )}
+
+            {/* STEP: IDENT (documento) */}
             {currentKey === "ident" && (
               <div className="space-y-5">
-                <h2 className="text-lg font-medium text-foreground">Identificação do recebedor</h2>
+                <h2 className="text-lg font-medium text-foreground">Identificação da igreja</h2>
                 <div>
-                  <Label required>Tipo de recebedor</Label>
+                  <Label required>Tipo de cadastro</Label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { v: "pj", label: "Pessoa Jurídica" },
@@ -346,11 +475,11 @@ function OnboardingPage() {
             {/* STEP: SOCIO */}
             {currentKey === "socio" && (
               <div className="space-y-6">
-                <h2 className="text-lg font-medium">Dados do sócio</h2>
+                <h2 className="text-lg font-medium">Dados do responsável</h2>
                 {partners.map((_, i) => (
                   <div key={i} className="rounded-lg border border-border bg-muted/30 p-5">
                     <div className="mb-4 flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-primary">Sócio {i + 1}</h3>
+                      <h3 className="text-sm font-medium text-primary">Responsável {i + 1}</h3>
                       {i > 0 && (
                         <button
                           type="button"
@@ -386,7 +515,7 @@ function OnboardingPage() {
                           type="email"
                           {...register(`partners.${i}.email`)}
                           className={fieldBase}
-                          placeholder="socio@empresa.com"
+                          placeholder="responsavel@igreja.com"
                         />
                         <ErrorMsg msg={errors.partners?.[i]?.email?.message} />
                       </div>
@@ -399,7 +528,7 @@ function OnboardingPage() {
                     onClick={addPartner}
                     className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-primary/40 px-4 py-3 text-sm text-primary transition hover:bg-primary/5"
                   >
-                    <Plus className="h-4 w-4" /> Adicionar outro sócio
+                    <Plus className="h-4 w-4" /> Adicionar outro responsável
                   </button>
                 )}
               </div>
@@ -408,14 +537,14 @@ function OnboardingPage() {
             {/* STEP: RECEB */}
             {currentKey === "receb" && (
               <div className="space-y-5">
-                <h2 className="text-lg font-medium">Dados do recebedor</h2>
+                <h2 className="text-lg font-medium">Dados de recebimento</h2>
                 <div>
-                  <Label>E-mail do recebedor</Label>
+                  <Label>E-mail financeiro</Label>
                   <input
                     type="email"
                     {...register("receiver_email")}
                     className={fieldBase}
-                    placeholder="financeiro@recebedor.com"
+                    placeholder="financeiro@igreja.com"
                   />
                   <ErrorMsg msg={errors.receiver_email?.message} />
                 </div>
@@ -425,7 +554,7 @@ function OnboardingPage() {
                     {...register("description")}
                     rows={4}
                     className={`${fieldBase} resize-none`}
-                    placeholder="Descreva brevemente a atividade do recebedor"
+                    placeholder="Descreva brevemente a atividade da igreja"
                   />
                   <ErrorMsg msg={errors.description?.message} />
                 </div>
@@ -436,7 +565,24 @@ function OnboardingPage() {
             {currentKey === "revisao" && (
               <div className="space-y-4">
                 <h2 className="text-lg font-medium">Revisão e confirmação</h2>
-                <ReviewBlock title="Identificação">
+
+                <ReviewBlock title="Identidade">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-border bg-background">
+                      {logoPreview ? (
+                        <img src={logoPreview} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="text-sm">
+                      <p className="font-medium text-foreground">{churchName || "—"}</p>
+                      <p className="text-xs text-muted-foreground">{getValues("church_tagline") || "—"}</p>
+                    </div>
+                  </div>
+                </ReviewBlock>
+
+                <ReviewBlock title="Documento">
                   <Row label="Tipo" value={getValues("type") === "pj" ? "Pessoa Jurídica" : "Pessoa Física"} />
                   <Row label="Documento" value={getValues("document")} />
                 </ReviewBlock>
@@ -448,10 +594,10 @@ function OnboardingPage() {
                   </ReviewBlock>
                 )}
 
-                <ReviewBlock title={getValues("partners").length > 1 ? "Sócios" : "Sócio"}>
+                <ReviewBlock title={getValues("partners").length > 1 ? "Responsáveis" : "Responsável"}>
                   {getValues("partners").map((p, i) => (
                     <div key={i} className="rounded-md border border-border bg-background p-3">
-                      <p className="mb-1 text-[10px] uppercase tracking-wider text-primary">Sócio {i + 1}</p>
+                      <p className="mb-1 text-[10px] uppercase tracking-wider text-primary">Responsável {i + 1}</p>
                       <Row label="Nome" value={p.full_name} />
                       <Row label="CPF" value={p.cpf} />
                       <Row label="E-mail" value={p.email} />
@@ -459,7 +605,7 @@ function OnboardingPage() {
                   ))}
                 </ReviewBlock>
 
-                <ReviewBlock title="Recebedor">
+                <ReviewBlock title="Recebimento">
                   <Row label="E-mail" value={getValues("receiver_email") || "—"} />
                   <Row label="Descrição" value={getValues("description") || "—"} />
                 </ReviewBlock>
@@ -482,6 +628,7 @@ function OnboardingPage() {
                   type="button"
                   onClick={next}
                   disabled={
+                    (currentKey === "identidade" && !!errors.church_name) ||
                     (currentKey === "ident" && !!errors.document) ||
                     (currentKey === "empresa" && (!!errors.company_name || !!errors.company_email)) ||
                     (currentKey === "socio" && !!errors.partners)

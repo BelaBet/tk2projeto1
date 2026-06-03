@@ -22,7 +22,7 @@ function AuthLayout() {
     }
   }, [user, loading, router]);
 
-  // Onboarding access is gated inside /recebedores/onboarding itself
+  // Onboarding access is gated inside /igrejas/onboarding itself
   // (requires confirmed email + approved profile).
 
   void supabase;
