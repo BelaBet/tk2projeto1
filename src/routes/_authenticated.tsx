@@ -14,7 +14,7 @@ function AuthLayout() {
   const { user, loading, signOut, profile, isStaff } = useAuth();
   const { tenant } = useTenant();
   const router = useRouter();
-  const location = useLocation();
+  
 
   useEffect(() => {
     if (!loading && !user) {
