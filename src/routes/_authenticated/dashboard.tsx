@@ -42,17 +42,6 @@ function Dashboard() {
 
       <DonationsSummary />
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map((c) => (
-          <div key={c.label} className="rounded-2xl border bg-card p-5 shadow-[var(--shadow-card)]">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{c.label}</span>
-              <c.icon className="h-4 w-4 text-primary" />
-            </div>
-            <div className="mt-3 font-display text-3xl">{c.value}</div>
-          </div>
-        ))}
-      </div>
 
       {!onboardingDone && (
         <div className="mt-10 rounded-2xl border bg-card p-6">
