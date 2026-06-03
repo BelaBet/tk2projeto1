@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { ContribuicaoModal } from "@/components/ContribuicaoModal";
 import { QRCodeCanvas } from "qrcode.react";
 import { buildPixPayload } from "@/lib/pix";
+import { useTenant } from "@/lib/tenant-context";
 
 export const Route = createFileRoute("/")({
   component: ChurchPage,
@@ -41,14 +42,12 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-// ── Mock data (substituir por fetch do Supabase via tenant_id/slug) ──────────
-const CHURCH = {
+// ── Fallback data (sobrescrita pelos dados do tenant carregados via useTenant) ─
+const CHURCH_DEFAULTS = {
   name: "Igreja Comunidade da Graça",
   tagline: "Um lugar de fé, amor e comunidade",
-  logo: null as string | null,
   primaryColor: "#1a3a5c",
   accentColor: "#C9993A",
-  coverPhoto: null as string | null,
 };
 
 type EventItem = {
