@@ -274,7 +274,7 @@ function OnboardingPage() {
             {/* STEP: IDENT */}
             {currentKey === "ident" && (
               <div className="space-y-5">
-                <h2 className="text-lg font-medium text-[#EDEDF2]">Identificação do recebedor</h2>
+                <h2 className="text-lg font-medium text-foreground">Identificação do recebedor</h2>
                 <div>
                   <Label required>Tipo de recebedor</Label>
                   <div className="grid grid-cols-2 gap-3">
