@@ -696,8 +696,17 @@ function MaisDialog({ open, onClose, onPick }: { open: boolean; onClose: () => v
 // ── MAIN PAGE ─────────────────────────────────────────────────────────────────
 function ChurchPage() {
   const [copied, setCopied] = useState(false);
-  
   const [scrolled, setScrolled] = useState(false);
+  const { tenant } = useTenant();
+  // CHURCH agora deriva dos dados do tenant cadastrado, com fallback para o mock.
+  const CHURCH = {
+    name: tenant?.name ?? CHURCH_DEFAULTS.name,
+    tagline: (tenant as { tagline?: string | null } | null)?.tagline ?? CHURCH_DEFAULTS.tagline,
+    logo: tenant?.logo_url ?? null,
+    primaryColor: tenant?.primary_color ?? CHURCH_DEFAULTS.primaryColor,
+    accentColor: tenant?.secondary_color ?? CHURCH_DEFAULTS.accentColor,
+    coverPhoto: null as string | null,
+  };
   const primary = CHURCH.primaryColor;
   const accent = CHURCH.accentColor;
 
