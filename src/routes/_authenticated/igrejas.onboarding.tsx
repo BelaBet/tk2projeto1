@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { cpf, cnpj } from "cpf-cnpj-validator";
 import { useServerFn } from "@tanstack/react-start";
+import { updateChurchIdentity } from "@/lib/church.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/igrejas/onboarding")({
