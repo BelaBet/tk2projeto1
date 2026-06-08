@@ -214,7 +214,7 @@ export const getPlatformFeeRevenue = createServerFn({ method: "POST" })
     const { data, error } = await supabaseAdmin
       .from("payments")
       .select("ticketto_fee")
-      .eq("status", "paid");
+      .eq("status", "confirmed");
     if (error) throw new Error(error.message);
     const rows = (data ?? []) as Array<{ ticketto_fee: number | null }>;
     const total = rows.reduce((s, r) => s + (r.ticketto_fee ?? 0), 0);
