@@ -292,13 +292,16 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
     const phoneDigits = payerPhone.replace(/\D/g, "");
 
     // CPF/CNPJ e celular são obrigatórios em todos os métodos.
-    if (cpfDigits.length === 11) {
-      if (!isValidCPF(cpfDigits)) {
-        setError("CPF inválido.");
-        return null;
-      }
-    } else if (cpfDigits.length !== 14) {
-      setError("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.");
+    if (cpfDigits.length !== 11 && cpfDigits.length !== 14) {
+      setError("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos).");
+      return null;
+    }
+    if (cpfDigits.length === 11 && !isValidCPF(cpfDigits)) {
+      setError("CPF inválido. Verifique os dígitos.");
+      return null;
+    }
+    if (cpfDigits.length === 14 && !isValidCNPJ(cpfDigits)) {
+      setError("CNPJ inválido. Verifique os dígitos.");
       return null;
     }
     if (phoneDigits.length < 10 || phoneDigits.length > 11) {
