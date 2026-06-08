@@ -257,9 +257,16 @@ export const createCreditCardPayment = createServerFn({ method: "POST" })
     const sellerRecipientId = await fetchSellerRecipientId(data.tenantId);
     const { donationAmount, tickettoFee, totalAmount } = calculateAmounts(data.donationAmount);
 
+    const resolved = await resolveCustomer(data);
+    if (!resolved.name) throw new Error("Nome do titular é obrigatório");
+    if (!resolved.email) throw new Error("E-mail é obrigatório");
+    if (!resolved.document) throw new Error("CPF ou CNPJ é obrigatório");
+    if (!data.billingAddress) throw new Error("Endereço de cobrança é obrigatório");
+    const customer = buildPagarmeCustomer(resolved, { allowAnonymous: false });
+
     const json = await pagarmeFetch("/orders", {
       items: buildItems(totalAmount),
-      customer: buildCustomer(data),
+      customer,
       payments: [
         {
           payment_method: "credit_card",
