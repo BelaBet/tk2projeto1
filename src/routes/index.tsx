@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-
 import { useState, useEffect, useRef, type ComponentType, type ReactNode } from "react";
 import {
   Dialog,
