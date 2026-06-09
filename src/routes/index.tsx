@@ -1036,10 +1036,11 @@ export function ChurchPageView({ tenantOverride }: { tenantOverride?: Tenant | n
       {/* ── FOOTER ─────────────────────────────────────────────────────── */}
       <footer style={{ padding: "48px 24px", textAlign: "center", background: "#fafaf7", borderTop: "1px solid #eee" }}>
 
-        {CHURCH.logo ? (
+        {CHURCH.logo && !logoError ? (
           <img
             src={CHURCH.logo}
             alt={CHURCH.name}
+            onError={() => setLogoError(true)}
             style={{ width: 48, height: 48, borderRadius: 999, objectFit: "cover", background: "#fff", margin: "0 auto 12px", display: "block" }}
           />
         ) : (
@@ -1049,7 +1050,7 @@ export function ChurchPageView({ tenantOverride }: { tenantOverride?: Tenant | n
               height: 48,
               borderRadius: 999,
               background: primary,
-              color: "#fff",
+              color: secondary || "#fff",
               display: "grid",
               placeItems: "center",
               margin: "0 auto 12px",
