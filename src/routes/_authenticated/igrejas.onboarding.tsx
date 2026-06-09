@@ -11,6 +11,7 @@ import { cpf, cnpj } from "cpf-cnpj-validator";
 import { useServerFn } from "@tanstack/react-start";
 import { updateChurchIdentity } from "@/lib/church.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/igrejas/onboarding")({
   component: OnboardingGate,
@@ -143,6 +144,7 @@ function OnboardingPage() {
   const [savedTenant, setSavedTenant] = useState<{ name: string; tagline: string; logo_url: string | null } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const submitChurch = useServerFn(updateChurchIdentity);
+  const queryClient = useQueryClient();
 
   const meta = (user?.user_metadata ?? {}) as Record<string, string | undefined>;
   const prefilledDoc = (meta.document ?? "").replace(/\D/g, "");
@@ -303,6 +305,13 @@ function OnboardingPage() {
         tagline: tenantRow.tagline ?? "",
         logo_url: tenantRow.logo_url ?? null,
       });
+      // Invalida caches do tenant para que a logo/cores apareçam imediatamente
+      // na home "/" e no header sem reload manual.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["home-tenant"] }),
+        queryClient.invalidateQueries({ queryKey: ["my-tenant"] }),
+        queryClient.invalidateQueries({ queryKey: ["my-tenant-header"] }),
+      ]);
       toast.success("Igreja cadastrada e verificada com sucesso!");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Não foi possível concluir o cadastro.";

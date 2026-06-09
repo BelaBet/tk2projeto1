@@ -33,6 +33,9 @@ import { QRCodeCanvas } from "qrcode.react";
 import { buildPixPayload } from "@/lib/pix";
 import { useTenant, type Tenant } from "@/lib/tenant-context";
 import { useChurchTheme } from "@/lib/theme";
+import { useAuth } from "@/lib/auth-context";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   component: ChurchPage,
@@ -705,17 +708,41 @@ export function ChurchPageView({ tenantOverride }: { tenantOverride?: Tenant | n
   const [copied, setCopied] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { tenant: ctxTenant } = useTenant();
-  const tenant = tenantOverride ?? ctxTenant;
+  const { profile } = useAuth();
   const { theme } = useChurchTheme();
-  // Cores derivam do tema extra\u00eddo da logo (TenantThemeBridge / ChurchThemeProvider).
+
+  // Quando o usuário está autenticado, prioriza o tenant do próprio perfil
+  // (lendo sempre da tabela `tenants`, sem cache stale) para refletir mudanças
+  // do onboarding imediatamente — logo, nome e cores do banner.
+  const { data: myTenant } = useQuery({
+    queryKey: ["home-tenant", profile?.tenant_id],
+    enabled: !!profile?.tenant_id,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tenants")
+        .select("id,slug,name,tagline,logo_url,primary_color,secondary_color,accent_color")
+        .eq("id", profile!.tenant_id)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const tenant = tenantOverride ?? myTenant ?? ctxTenant;
   const CHURCH = {
     name: tenant?.name ?? CHURCH_DEFAULTS.name,
     tagline: tenant?.tagline ?? CHURCH_DEFAULTS.tagline,
-    logo: tenant?.logo_url ?? null,
+    logo: (tenant?.logo_url && String(tenant.logo_url).trim() !== "") ? tenant.logo_url : null,
     coverPhoto: null as string | null,
   };
-  const primary = theme.primary;
-  const accent = theme.accent;
+  // Cores vêm direto da tabela `tenants` quando disponíveis; caem para o tema extraído da logo.
+  const tenantAny = tenant as (Tenant & { primary_color?: string | null; secondary_color?: string | null; accent_color?: string | null }) | null;
+  const primary = tenantAny?.primary_color || theme.primary;
+  const secondary = tenantAny?.secondary_color || `${primary}dd`;
+  const accent = tenantAny?.accent_color || tenantAny?.secondary_color || theme.accent;
 
 
   useEffect(() => {
@@ -840,7 +867,7 @@ export function ChurchPageView({ tenantOverride }: { tenantOverride?: Tenant | n
       <section
         className="relative overflow-hidden px-6 pt-5 pb-6 text-center sm:px-6 sm:pt-20 sm:pb-24 max-h-[65vh] sm:max-h-none"
         style={{
-          background: `linear-gradient(135deg, ${primary} 0%, ${primary}dd 100%)`,
+          background: `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`,
           color: "#fff",
         }}
       >
