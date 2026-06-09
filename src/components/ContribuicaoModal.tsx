@@ -1140,7 +1140,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props)
                     <span className="font-medium text-[#111827]">R$ {formatBRL(Math.round(Number(value) * 100))}</span>
                   </div>
                   <div className="mt-1 flex items-center justify-between text-[#6B7280]">
-                    <span>Taxa de serviço (3,5%)</span>
+                    <span>Taxa de Administrativa (3,5%)</span>
                     <span className="font-medium text-[#111827]">R$ {formatBRL(tickettoFee)}</span>
                   </div>
                   <div className="mt-2 border-t border-[#E5E7EB] pt-2 flex items-center justify-between">
