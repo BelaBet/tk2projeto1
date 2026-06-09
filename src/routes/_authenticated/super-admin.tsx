@@ -1,12 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { ShieldAlert, Crown, Users, Building2, CreditCard, Activity } from "lucide-react";
 import { initials } from "@/lib/utils";
+import { toast } from "sonner";
+import { translateError } from "@/lib/translate-error";
 
 export const Route = createFileRoute("/_authenticated/super-admin")({
   component: SuperAdminPage,
@@ -118,22 +121,7 @@ function SuperAdminPage() {
         </CardHeader>
         <CardContent className="space-y-2">
           {tenants?.length ? (
-            tenants.map((t) => (
-              <div key={t.id} className="flex items-center justify-between rounded-lg border bg-card px-3 py-2">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md border bg-primary text-primary-foreground text-xs font-medium grid place-items-center">
-                    {initials(t.name)}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">{t.name}</div>
-                    <div className="truncate text-xs text-muted-foreground">/{t.slug}</div>
-                  </div>
-                </div>
-                <Badge variant={t.active ? "default" : "secondary"}>
-                  {t.active ? "Ativa" : "Inativa"}
-                </Badge>
-              </div>
-            ))
+            tenants.map((t) => <TenantRowItem key={t.id} tenant={t} />)
           ) : (
             <p className="text-sm text-muted-foreground">Nenhuma igreja cadastrada.</p>
           )}
