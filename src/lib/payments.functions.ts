@@ -137,7 +137,7 @@ export const createPixPayment = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => PixInput.parse(data))
   .handler(async ({ data }) => {
     const sellerRecipientId = await fetchSellerRecipientId(data.tenantId);
-    const { donationAmount, tickettoFee, totalAmount } = calculateAmounts(data.donationAmount);
+    const { donationAmount, tickettoFee, pixFixedFee, totalAmount } = calculateAmounts(data.donationAmount, "pix");
     const expiresIn = 60 * 60; // 1h
 
     const resolved = await resolveCustomer(data);
@@ -160,7 +160,7 @@ export const createPixPayment = createServerFn({ method: "POST" })
               { name: "Contribuição", value: resolved.name ?? "Anônimo" },
             ],
           },
-          split: buildSplitPayload(donationAmount, tickettoFee, sellerRecipientId),
+          split: buildSplitPayload(donationAmount, tickettoFee, sellerRecipientId, pixFixedFee),
         },
       ],
     });
@@ -183,7 +183,7 @@ export const createPixPayment = createServerFn({ method: "POST" })
     const ids = await persistPayment({
       tenantId: data.tenantId,
       donationAmount,
-      tickettoFee,
+      tickettoFee: tickettoFee + pixFixedFee,
       totalAmount,
       sellerRecipientId,
       method: "pix",
