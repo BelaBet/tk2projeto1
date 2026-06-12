@@ -50,7 +50,37 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
     if (!resolved.email) throw new Error("E-mail é obrigatório para boleto");
     if (!resolved.document) throw new Error("CPF ou CNPJ é obrigatório para boleto");
     if (!validateDocument(resolved.document)) throw new Error("CPF ou CNPJ inválido");
-    const customer = buildPagarmeCustomer(resolved);
+
+    // Endereço do tenant (fonte do endereço do pagador no boleto)
+    const { data: tAddr } = await supabaseAdmin
+      .from("tenant_address")
+      .select("cep, rua, numero, neighborhood, city, uf, estado")
+      .eq("tenant_id", data.tenantId)
+      .maybeSingle();
+    const addrRow = tAddr as
+      | {
+          cep?: string | null;
+          rua?: string | null;
+          numero?: string | null;
+          neighborhood?: string | null;
+          city?: string | null;
+          uf?: string | null;
+          estado?: string | null;
+        }
+      | null;
+
+    const customer = {
+      ...buildPagarmeCustomer(resolved),
+      address: {
+        line_1: addrRow?.rua
+          ? `${addrRow.numero ?? "s/n"}, ${addrRow.rua}, ${addrRow.neighborhood ?? ""}`.trim()
+          : "Endereço não informado",
+        zip_code: (addrRow?.cep ?? "").replace(/\D/g, "") || "00000000",
+        city: addrRow?.city ?? "São Paulo",
+        state: (addrRow?.uf ?? addrRow?.estado ?? "SP").slice(0, 2).toUpperCase(),
+        country: "BR",
+      },
+    };
 
     const orderPayload = {
       items: [
@@ -66,8 +96,10 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
         {
           payment_method: "boleto",
           boleto: {
+            bank: process.env.BOLETO_BANK_CODE ?? "033",
             due_at: dueAt,
             instructions: "Obrigado pela sua contribuição!",
+            document_number: `CONTRIB-${Date.now()}`,
           },
           split: buildSplitPayload(amounts, sellerRecipientId),
         },
@@ -92,6 +124,12 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
       throw new Error(`Resposta inválida da Pagar.me: ${raw.slice(0, 200)}`);
     }
     if (!res.ok) {
+      console.error("[boleto] pagar.me rejected", {
+        status: res.status,
+        errors: json?.errors,
+        message: json?.message,
+        sentPayload: orderPayload,
+      });
       const msg =
         json?.message ||
         (json?.errors && JSON.stringify(json.errors)) ||
