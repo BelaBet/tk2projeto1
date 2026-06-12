@@ -105,6 +105,13 @@ function AuthLayout() {
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
             <Button asChild variant="ghost" size="sm"><Link to="/dashboard">Painel</Link></Button>
+            {isStaff && (myTenant as { slug?: string } | null)?.slug && (
+              <Button asChild variant="ghost" size="sm">
+                <a href={`/i/${(myTenant as { slug: string }).slug}`} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4 mr-1" /> Página de Doação
+                </a>
+              </Button>
+            )}
             <Button asChild variant="ghost" size="sm"><Link to="/messages">Mensagens</Link></Button>
             <Button asChild variant="ghost" size="sm"><Link to="/notifications"><Bell className="h-4 w-4" /></Link></Button>
             {isStaff && <Button asChild variant="default" size="sm"><Link to="/manage/dashboard">Gestão</Link></Button>}
