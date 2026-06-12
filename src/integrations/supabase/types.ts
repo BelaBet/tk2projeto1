@@ -183,6 +183,7 @@ export type Database = {
           campaign_id: string | null
           card_brand: string | null
           card_last_four: string | null
+          cost_center_id: string | null
           created_at: string
           deleted_at: string | null
           deleted_by: string | null
@@ -207,6 +208,7 @@ export type Database = {
           campaign_id?: string | null
           card_brand?: string | null
           card_last_four?: string | null
+          cost_center_id?: string | null
           created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
@@ -231,6 +233,7 @@ export type Database = {
           campaign_id?: string | null
           card_brand?: string | null
           card_last_four?: string | null
+          cost_center_id?: string | null
           created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
@@ -255,6 +258,20 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donations_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donations_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers_public"
             referencedColumns: ["id"]
           },
           {
