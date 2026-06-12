@@ -637,6 +637,7 @@ function PaymentsQuickActions({ primary, accent, pixKey, costCenter }: { primary
   // methodOpen = método cujo dialog específico (Pix/Boleto/...) está aberto, após confirmar o valor
   const [contribKey, setContribKey] = useState<ActionKey | null>(null);
   const [methodOpen, setMethodOpen] = useState<ActionKey | null>(null);
+  const [selectedAmount, setSelectedAmount] = useState<string>("");
   const contribLabel = QUICK_ACTIONS.find((a) => a.key === contribKey)?.label ?? "";
 
   return (
@@ -677,6 +678,7 @@ function PaymentsQuickActions({ primary, accent, pixKey, costCenter }: { primary
         costCenter={costCenter ?? null}
         onConfirm={(valor) => {
           const k = contribKey;
+          setSelectedAmount(String(valor));
           if (k === "boleto") {
             // O próprio ContribuicaoModal já exibe o boleto gerado — sem 2º modal.
             toast.success(`Valor selecionado: R$${valor}`);
@@ -690,7 +692,7 @@ function PaymentsQuickActions({ primary, accent, pixKey, costCenter }: { primary
         }}
       />
 
-      <PixDialog open={methodOpen === "pix"} onClose={() => setMethodOpen(null)} pixKey={pixKey} primary={primary} />
+      <PixDialog open={methodOpen === "pix"} onClose={() => setMethodOpen(null)} pixKey={pixKey} primary={primary} initialAmount={selectedAmount} />
       <FaturaDialog open={methodOpen === "fatura"} onClose={() => setMethodOpen(null)} primary={primary} />
       <MaisDialog open={methodOpen === "mais"} onClose={() => setMethodOpen(null)} onPick={(k) => setMethodOpen(k)} />
     </>
@@ -711,9 +713,10 @@ function PaymentDialogShell({ open, onClose, title, description, children }: { o
   );
 }
 
-function PixDialog({ open, onClose, pixKey, primary }: { open: boolean; onClose: () => void; pixKey: string; primary: string }) {
+function PixDialog({ open, onClose, pixKey, primary, initialAmount = "" }: { open: boolean; onClose: () => void; pixKey: string; primary: string; initialAmount?: string }) {
   const [key, setKey] = useState(pixKey);
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(initialAmount);
+  useEffect(() => { if (open) setAmount(initialAmount); }, [open, initialAmount]);
   const [copied, setCopied] = useState(false);
   const qrWrapRef = useRef<HTMLDivElement>(null);
   const brCode = buildPixPayload({
