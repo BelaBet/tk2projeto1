@@ -57,13 +57,6 @@ export type Database = {
             referencedRelation: "tenants_public"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "api_keys_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
-            referencedColumns: ["id"]
-          },
         ]
       }
       audit_logs: {
@@ -110,13 +103,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "audit_logs_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
             referencedColumns: ["id"]
           },
         ]
@@ -186,13 +172,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cost_centers_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
             referencedColumns: ["id"]
           },
         ]
@@ -303,13 +282,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "donations_payment_id_fkey"
-            columns: ["payment_id"]
-            isOneToOne: false
-            referencedRelation: "payments_staff"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "donations_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
@@ -328,13 +300,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
             referencedColumns: ["id"]
           },
         ]
@@ -392,13 +357,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "events_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
             referencedColumns: ["id"]
           },
         ]
@@ -531,13 +489,6 @@ export type Database = {
             referencedRelation: "tenants_public"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "groups_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
-            referencedColumns: ["id"]
-          },
         ]
       }
       impersonation_sessions: {
@@ -632,13 +583,6 @@ export type Database = {
             referencedRelation: "tenants_public"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "messages_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
-            referencedColumns: ["id"]
-          },
         ]
       }
       notifications: {
@@ -692,13 +636,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
             referencedColumns: ["id"]
           },
         ]
@@ -828,13 +765,6 @@ export type Database = {
             referencedRelation: "tenants_public"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "payments_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
-            referencedColumns: ["id"]
-          },
         ]
       }
       platform_roles: {
@@ -944,13 +874,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
             referencedColumns: ["id"]
           },
         ]
@@ -1100,13 +1023,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: true
             referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tenant_payment_info_cache_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: true
-            referencedRelation: "tenants_staff"
             referencedColumns: ["id"]
           },
         ]
@@ -1345,13 +1261,6 @@ export type Database = {
             referencedRelation: "tenants_public"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "tickets_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_roles: {
@@ -1389,13 +1298,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_roles_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
             referencedColumns: ["id"]
           },
         ]
@@ -1446,223 +1348,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cost_centers_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      donations_staff: {
-        Row: {
-          admin_fee: number | null
-          amount: number | null
-          campaign_id: string | null
-          cost_center_id: string | null
-          created_at: string | null
-          gross_amount: number | null
-          id: string | null
-          installments: number | null
-          net_amount: number | null
-          payment_id: string | null
-          payment_method: string | null
-          profile_id: string | null
-          receipt_url: string | null
-          tenant_id: string | null
-        }
-        Insert: {
-          admin_fee?: number | null
-          amount?: number | null
-          campaign_id?: string | null
-          cost_center_id?: string | null
-          created_at?: string | null
-          gross_amount?: number | null
-          id?: string | null
-          installments?: number | null
-          net_amount?: number | null
-          payment_id?: string | null
-          payment_method?: string | null
-          profile_id?: string | null
-          receipt_url?: string | null
-          tenant_id?: string | null
-        }
-        Update: {
-          admin_fee?: number | null
-          amount?: number | null
-          campaign_id?: string | null
-          cost_center_id?: string | null
-          created_at?: string | null
-          gross_amount?: number | null
-          id?: string | null
-          installments?: number | null
-          net_amount?: number | null
-          payment_id?: string | null
-          payment_method?: string | null
-          profile_id?: string | null
-          receipt_url?: string | null
-          tenant_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "donations_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_cost_center_id_fkey"
-            columns: ["cost_center_id"]
-            isOneToOne: false
-            referencedRelation: "cost_centers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_cost_center_id_fkey"
-            columns: ["cost_center_id"]
-            isOneToOne: false
-            referencedRelation: "cost_centers_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_payment_id_fkey"
-            columns: ["payment_id"]
-            isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_payment_id_fkey"
-            columns: ["payment_id"]
-            isOneToOne: false
-            referencedRelation: "payments_staff"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payments_staff: {
-        Row: {
-          amount: number | null
-          card_brand: string | null
-          cost_center_id: string | null
-          created_at: string | null
-          donation_amount: number | null
-          gateway_id: string | null
-          id: string | null
-          method: Database["public"]["Enums"]["payment_method"] | null
-          profile_id: string | null
-          reference_id: string | null
-          reference_type: Database["public"]["Enums"]["payment_ref_type"] | null
-          status: Database["public"]["Enums"]["payment_status"] | null
-          tenant_id: string | null
-        }
-        Insert: {
-          amount?: number | null
-          card_brand?: string | null
-          cost_center_id?: string | null
-          created_at?: string | null
-          donation_amount?: number | null
-          gateway_id?: string | null
-          id?: string | null
-          method?: Database["public"]["Enums"]["payment_method"] | null
-          profile_id?: string | null
-          reference_id?: string | null
-          reference_type?:
-            | Database["public"]["Enums"]["payment_ref_type"]
-            | null
-          status?: Database["public"]["Enums"]["payment_status"] | null
-          tenant_id?: string | null
-        }
-        Update: {
-          amount?: number | null
-          card_brand?: string | null
-          cost_center_id?: string | null
-          created_at?: string | null
-          donation_amount?: number | null
-          gateway_id?: string | null
-          id?: string | null
-          method?: Database["public"]["Enums"]["payment_method"] | null
-          profile_id?: string | null
-          reference_id?: string | null
-          reference_type?:
-            | Database["public"]["Enums"]["payment_ref_type"]
-            | null
-          status?: Database["public"]["Enums"]["payment_status"] | null
-          tenant_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payments_cost_center_id_fkey"
-            columns: ["cost_center_id"]
-            isOneToOne: false
-            referencedRelation: "cost_centers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_cost_center_id_fkey"
-            columns: ["cost_center_id"]
-            isOneToOne: false
-            referencedRelation: "cost_centers_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants_staff"
             referencedColumns: ["id"]
           },
         ]
@@ -1730,57 +1415,6 @@ export type Database = {
           logo_url?: string | null
           name?: string | null
           primary_color?: string | null
-          secondary_color?: string | null
-          slug?: string | null
-          tagline?: string | null
-        }
-        Relationships: []
-      }
-      tenants_staff: {
-        Row: {
-          accent_color: string | null
-          active: boolean | null
-          cover_photo_url: string | null
-          created_at: string | null
-          custom_domain: string | null
-          id: string | null
-          logo_url: string | null
-          name: string | null
-          primary_color: string | null
-          recipient_error: string | null
-          recipient_status: string | null
-          secondary_color: string | null
-          slug: string | null
-          tagline: string | null
-        }
-        Insert: {
-          accent_color?: string | null
-          active?: boolean | null
-          cover_photo_url?: string | null
-          created_at?: string | null
-          custom_domain?: string | null
-          id?: string | null
-          logo_url?: string | null
-          name?: string | null
-          primary_color?: string | null
-          recipient_error?: string | null
-          recipient_status?: string | null
-          secondary_color?: string | null
-          slug?: string | null
-          tagline?: string | null
-        }
-        Update: {
-          accent_color?: string | null
-          active?: boolean | null
-          cover_photo_url?: string | null
-          created_at?: string | null
-          custom_domain?: string | null
-          id?: string | null
-          logo_url?: string | null
-          name?: string | null
-          primary_color?: string | null
-          recipient_error?: string | null
-          recipient_status?: string | null
           secondary_color?: string | null
           slug?: string | null
           tagline?: string | null
