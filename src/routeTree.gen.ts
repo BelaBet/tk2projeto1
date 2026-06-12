@@ -29,6 +29,7 @@ import { Route as AuthenticatedManageIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedIgrejasIndexRouteImport } from './routes/_authenticated/igrejas.index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as ApiPublicCreateDonationRouteImport } from './routes/api/public/create-donation'
 import { Route as AuthenticatedManageSettingsRouteImport } from './routes/_authenticated/manage.settings'
 import { Route as AuthenticatedManageMembersRouteImport } from './routes/_authenticated/manage.members'
 import { Route as AuthenticatedManageDashboardRouteImport } from './routes/_authenticated/manage.dashboard'
@@ -145,6 +146,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const ApiPublicCreateDonationRoute = ApiPublicCreateDonationRouteImport.update({
+  id: '/api/public/create-donation',
+  path: '/api/public/create-donation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedManageSettingsRoute =
   AuthenticatedManageSettingsRouteImport.update({
     id: '/settings',
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/manage/dashboard': typeof AuthenticatedManageDashboardRoute
   '/manage/members': typeof AuthenticatedManageMembersRoute
   '/manage/settings': typeof AuthenticatedManageSettingsRoute
+  '/api/public/create-donation': typeof ApiPublicCreateDonationRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/igrejas/': typeof AuthenticatedIgrejasIndexRoute
@@ -275,6 +282,7 @@ export interface FileRoutesByTo {
   '/manage/dashboard': typeof AuthenticatedManageDashboardRoute
   '/manage/members': typeof AuthenticatedManageMembersRoute
   '/manage/settings': typeof AuthenticatedManageSettingsRoute
+  '/api/public/create-donation': typeof ApiPublicCreateDonationRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/igrejas': typeof AuthenticatedIgrejasIndexRoute
@@ -310,6 +318,7 @@ export interface FileRoutesById {
   '/_authenticated/manage/dashboard': typeof AuthenticatedManageDashboardRoute
   '/_authenticated/manage/members': typeof AuthenticatedManageMembersRoute
   '/_authenticated/manage/settings': typeof AuthenticatedManageSettingsRoute
+  '/api/public/create-donation': typeof ApiPublicCreateDonationRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/igrejas/': typeof AuthenticatedIgrejasIndexRoute
@@ -345,6 +354,7 @@ export interface FileRouteTypes {
     | '/manage/dashboard'
     | '/manage/members'
     | '/manage/settings'
+    | '/api/public/create-donation'
     | '/admin/'
     | '/dashboard/'
     | '/igrejas/'
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/manage/dashboard'
     | '/manage/members'
     | '/manage/settings'
+    | '/api/public/create-donation'
     | '/admin'
     | '/dashboard'
     | '/igrejas'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/_authenticated/manage/dashboard'
     | '/_authenticated/manage/members'
     | '/_authenticated/manage/settings'
+    | '/api/public/create-donation'
     | '/_authenticated/admin/'
     | '/_authenticated/dashboard/'
     | '/_authenticated/igrejas/'
@@ -426,6 +438,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   ISlugRoute: typeof ISlugRoute
+  ApiPublicCreateDonationRoute: typeof ApiPublicCreateDonationRoute
   ApiPublicWebhooksPagarmeRoute: typeof ApiPublicWebhooksPagarmeRoute
 }
 
@@ -570,6 +583,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/api/public/create-donation': {
+      id: '/api/public/create-donation'
+      path: '/api/public/create-donation'
+      fullPath: '/api/public/create-donation'
+      preLoaderRoute: typeof ApiPublicCreateDonationRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/manage/settings': {
       id: '/_authenticated/manage/settings'
@@ -741,6 +761,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   ISlugRoute: ISlugRoute,
+  ApiPublicCreateDonationRoute: ApiPublicCreateDonationRoute,
   ApiPublicWebhooksPagarmeRoute: ApiPublicWebhooksPagarmeRoute,
 }
 export const routeTree = rootRouteImport
