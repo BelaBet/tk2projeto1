@@ -17,11 +17,20 @@ export type ContribMethod = {
   label: string;
 };
 
+export type CostCenterOption = {
+  id: string;
+  name: string;
+  slug: string;
+  allows_installments: boolean;
+  max_installments: number;
+};
+
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   onConfirm?: (valor: number) => void;
   method?: ContribMethod;
+  costCenter?: CostCenterOption | null;
 };
 
 const PRESETS = [10, 25, 50, 100, 200];
@@ -126,7 +135,7 @@ function isValidDoc(raw: string) {
   return false;
 }
 
-export function ContribuicaoModal({ isOpen, onClose, onConfirm, method }: Props) {
+export function ContribuicaoModal({ isOpen, onClose, onConfirm, method, costCenter }: Props) {
   const { tenant } = useTenant();
   const createBoleto = useServerFn(createBoletoPayment);
   const createPix = useServerFn(createPixPayment);
