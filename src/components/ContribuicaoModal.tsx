@@ -970,7 +970,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method, costCent
                   </p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">Telefone (opcional)</label>
+                  <label className="text-xs font-medium text-[#6B7280]">Celular *</label>
                   <input
                     type="tel"
                     inputMode="numeric"
