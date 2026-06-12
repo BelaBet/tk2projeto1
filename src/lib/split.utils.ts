@@ -21,7 +21,6 @@ export interface SplitPayload {
   recipient_id: string;
   type: "flat";
   options: {
-    charge_remainder_fee: boolean;
     liable: boolean;
     charge_processing_fee: boolean;
   };
