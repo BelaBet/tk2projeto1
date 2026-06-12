@@ -141,6 +141,7 @@ async function persistPayment(args: {
   status: "pending" | "confirmed" | "failed";
   gatewayId: string;
   cardBrand?: CardBrand | null;
+  costCenterId?: string | null;
   gatewayRequest?: any;
   gatewayResponse?: any;
   errorMessage?: string | null;
@@ -168,6 +169,7 @@ async function persistPayment(args: {
       platform_recipient_id: platformRecipientId,
       seller_recipient_id: args.sellerRecipientId,
       card_brand: args.cardBrand ?? null,
+      cost_center_id: args.costCenterId ?? null,
       gateway_request: args.gatewayRequest ?? null,
       gateway_response: args.gatewayResponse ?? null,
       error_message: args.errorMessage ?? null,
