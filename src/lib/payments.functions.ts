@@ -367,12 +367,26 @@ export const createCreditCardPayment = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => CardInput.parse(data))
   .handler(async ({ data }) => {
     const sellerRecipientId = await fetchSellerRecipientId(data.tenantId);
-    const amounts = calculateCardAmounts(data.donationAmount, data.installments, data.brand);
+    const costCenter = data.costCenterId
+      ? await fetchCostCenter(data.costCenterId, data.tenantId)
+      : null;
+    if (costCenter) {
+      if (!costCenter.allows_installments && data.installments > 1) {
+        throw new Error("Este centro de custo não permite parcelamento.");
+      }
+      if (data.installments > costCenter.max_installments) {
+        throw new Error(`Este centro permite no máximo ${costCenter.max_installments}x.`);
+      }
+    }
+    const splitOverride = costCenter?.split_platform_percent ?? null;
+    const amounts = calculateCardAmounts(data.donationAmount, data.installments, data.brand, splitOverride);
     if (process.env.NODE_ENV !== "production") {
       console.log("[card] amounts", amounts, {
         sellerRecipientId,
         installments: data.installments,
         brand: data.brand,
+        costCenterId: data.costCenterId,
+        splitOverride,
       });
     }
 
@@ -423,6 +437,7 @@ export const createCreditCardPayment = createServerFn({ method: "POST" })
         sellerRecipientId,
         method: "credit_card",
         cardBrand: data.brand,
+        costCenterId: data.costCenterId ?? null,
         status: "failed",
         gatewayId: "",
         gatewayRequest: call.request,
@@ -450,6 +465,7 @@ export const createCreditCardPayment = createServerFn({ method: "POST" })
       sellerRecipientId,
       method: "credit_card",
       cardBrand: data.brand,
+      costCenterId: data.costCenterId ?? null,
       status: mapped,
       gatewayId,
       gatewayRequest: call.request,
