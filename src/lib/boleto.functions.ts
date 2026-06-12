@@ -187,7 +187,11 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
         tenant_id: data.tenantId,
         amount: amounts.donationAmount / 100,
         payment_id: payment.id,
-      })
+        donor_name: resolved.name ?? null,
+        donor_email: resolved.email ?? null,
+        donor_document: resolved.document ? resolved.document.replace(/\D/g, "") : null,
+        donor_phone: resolved.phone ? resolved.phone.replace(/\D/g, "") : null,
+      } as any)
       .select("id")
       .single();
     if (donErr || !donation) throw new Error(donErr?.message ?? "Falha ao registrar doação");
