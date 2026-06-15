@@ -639,7 +639,7 @@ function EventCard({ event, accent, primary }: { event: EventItem; accent: strin
 
   return (
     <a
-      href={event.ticketUrl}
+      href="https://www.ticketto.com.br"
       target="_blank"
       rel="noopener noreferrer"
       onMouseEnter={() => setHovered(true)}
