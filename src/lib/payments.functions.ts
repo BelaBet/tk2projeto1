@@ -39,29 +39,28 @@ const PixInput = z.object({
   ...OptionalCustomerSchema,
 });
 
-const CardInput = z.object({
-  tenantId: z.string().uuid(),
-  donationAmount: DonationAmount,
-  installments: z.number().int().min(1).max(12).default(1),
-  brand: z.enum(["master_visa", "ello_hiper_amex"]).default("master_visa"),
-  costCenterId: z.string().uuid().optional().nullable(),
-  card: z.object({
-    number: z.string().min(13).max(19),
-    holderName: z.string().min(2).max(120),
-    expMonth: z.number().int().min(1).max(12),
-    expYear: z.number().int().min(2024).max(2100),
-    cvv: z.string().min(3).max(4),
-  }),
-  billingAddress: z.object({
-    line1: z.string().min(3).max(200),
-    zipCode: z.string().min(8).max(9),
-    city: z.string().min(2).max(80),
-    state: z.string().length(2),
-    country: z.string().length(2).default("BR"),
-  }),
-  ...OptionalCustomerSchema,
-});
-
+43: const CardInput = z.object({
+44:   tenantId: z.string().uuid(),
+45:   donationAmount: DonationAmount,
+46:   installments: z.number().int().min(1).max(12).default(1),
+47:   brand: z.enum(["master_visa", "ello_hiper_amex"]).default("master_visa"),
+48:   costCenterId: z.string().uuid().optional().nullable(),
+49:   card: z.object({
+50:     number: z.string().min(13).max(19),
+51:     holderName: z.string().min(2).max(120),
+52:     expMonth: z.number().int().min(1).max(12),
+53:     expYear: z.number().int().min(2024).max(2100),
+54:     cvv: z.string().min(3).max(4),
+55:   }),
+56:   billingAddress: z.object({
+57:     line1: z.string().min(3).max(200),
+58:     zipCode: z.string().min(8).max(9),
+59:     city: z.string().min(2).max(80),
+60:     state: z.string().length(2),
+61:     country: z.string().length(2).default("BR"),
+62:   }),
+63:   ...OptionalCustomerSchema,
+64: });
 // Redacta campos sensíveis antes de gravar no banco (PCI / LGPD).
 function redactRequest(body: any): any {
   if (!body || typeof body !== "object") return body;
