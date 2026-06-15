@@ -216,6 +216,11 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method, costCent
       setAddrZip("");
       setAddrCity("");
       setAddrState("");
+      setBoletoAddrLine("");
+      setBoletoAddrZip("");
+      setBoletoAddrCity("");
+      setBoletoAddrState("");
+      setBoletoAddrNeighborhood("");
       setBoleto(null);
       setPix(null);
       setCardResult(null);
