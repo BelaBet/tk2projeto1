@@ -183,8 +183,7 @@ export const provisionTenant = createServerFn({ method: "POST" })
       if (exErr) throw new Error(exErr.message);
       if (!existing) return null;
 
-      const existingRow = existing as { id: string; slug: string | null; compliance_status: string | null };
-      const status = existingRow.compliance_status;
+      const status = (existing as any).compliance_status as string | null;
       const reusableStatus =
         status === "pending_documents" ||
         status === "pending" ||
@@ -194,7 +193,7 @@ export const provisionTenant = createServerFn({ method: "POST" })
       const { count } = await supabaseAdmin
         .from("user_roles")
         .select("user_id", { count: "exact", head: true })
-        .eq("tenant_id", existingRow.id);
+        .eq("tenant_id", existing.id);
 
       if (!reusableStatus || (count ?? 0) > 0) {
         // Tenant ativo com usuário → erro real de duplicidade
@@ -202,25 +201,23 @@ export const provisionTenant = createServerFn({ method: "POST" })
       }
 
       // Tenant reutilizável — buscar dados reais
-      const slug = existingRow.slug ?? "";
+      const slug = (existing as any).slug ?? "";
       const publicUrl = slug ? `${origin}/i/${slug}` : "";
 
-      // Buscar cost_center existente (qr_code_url vive em cost_centers)
+      // Buscar cost_center existente — qr_code_url vive em cost_centers
       const { data: cc } = await supabaseAdmin
         .from("cost_centers")
         .select("id, qr_code_url")
-        .eq("tenant_id", existingRow.id)
+        .eq("tenant_id", existing.id)
         .eq("slug", "online")
         .maybeSingle();
 
-      const qrCodeUrl = (cc as { qr_code_url?: string | null } | null)?.qr_code_url ?? "";
-
       return {
-        tenant_id: existingRow.id,
+        tenant_id: existing.id as string,
         slug,
         public_url: publicUrl,
-        qr_code_url: qrCodeUrl,
-        cost_center_id: (cc as { id?: string } | null)?.id ?? null,
+        qr_code_url: (cc as any)?.qr_code_url ?? "", // ← vem de cost_centers
+        cost_center_id: (cc as any)?.id ?? null,
         compliance_status: status ?? "pending_documents",
         warnings: [],
       };
