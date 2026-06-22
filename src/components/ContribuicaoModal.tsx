@@ -460,7 +460,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method, costCent
         if (addrState.trim().length !== 2) return setError("UF inválida (2 letras).");
 
         const allowsInst = costCenter ? costCenter.allows_installments : true;
-        const maxInst = costCenter ? Math.max(1, Math.min(12, costCenter.max_installments)) : 12;
+        const maxInst = costCenter ? Math.max(1, Math.min(2, costCenter.max_installments)) : 2;
         const effInstallments = allowsInst ? Math.min(installments, maxInst) : 1;
         const detectedBrand = detectCardBrand(cardNumber);
         const brand: "master_visa" | "ello_hiper_amex" =
@@ -1153,7 +1153,7 @@ export function ContribuicaoModal({ isOpen, onClose, onConfirm, method, costCent
                 </div>
                 {(() => {
                   const allowsInst = costCenter ? costCenter.allows_installments : true;
-                  const maxInst = costCenter ? Math.max(1, Math.min(12, costCenter.max_installments)) : 12;
+                  const maxInst = costCenter ? Math.max(1, Math.min(2, costCenter.max_installments)) : 2;
                   if (!allowsInst) return null;
                   return (
                     <div>
