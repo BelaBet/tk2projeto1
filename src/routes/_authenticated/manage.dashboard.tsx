@@ -118,21 +118,6 @@ function ManagerDashboard() {
         </Card>
       </div>
 
-      <Card className="p-4">
-        <h2 className="mb-3 flex items-center gap-2 font-medium"><Activity className="h-4 w-4" /> Atividade recente</h2>
-        {activity.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Sem registros ainda.</p>
-        ) : (
-          <ul className="divide-y">
-            {activity.map((a) => (
-              <li key={a.id} className="flex items-center justify-between py-2 text-sm">
-                <span><strong>{a.action}</strong> {a.entity && <span className="text-muted-foreground">em {a.entity}</span>}</span>
-                <span className="text-xs text-muted-foreground">{format(new Date(a.created_at), "dd/MM HH:mm")}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
     </div>
   );
 }
