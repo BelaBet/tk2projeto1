@@ -21,7 +21,7 @@ function ManagerDashboard() {
   const [kpis, setKpis] = useState<Kpis>({ total: 0, active: 0, pending: 0, donationsMonth: 0, eventsMonth: 0, ticketsMonth: 0 });
   const [donationSeries, setDonationSeries] = useState<{ month: string; total: number }[]>([]);
   const [attendance, setAttendance] = useState<{ event: string; count: number }[]>([]);
-  const [activity, setActivity] = useState<{ id: string; action: string; entity: string | null; created_at: string }[]>([]);
+  
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
