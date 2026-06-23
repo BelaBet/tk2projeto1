@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { KpiCard } from "@/components/kpi-card";
-import { Users, UserCheck, DollarSign, Calendar, Ticket, Activity } from "lucide-react";
+import { Users, UserCheck, DollarSign, Calendar, Ticket } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, BarChart, Bar, CartesianGrid,
 } from "recharts";
