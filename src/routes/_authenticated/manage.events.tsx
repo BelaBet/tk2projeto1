@@ -48,7 +48,7 @@ function ManageEventsPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormData>(empty);
-
+  const [uploading, setUploading] = useState(false);
   const { data: events, isLoading } = useQuery({
     queryKey: ["manage-events", tenantId],
     enabled: !!tenantId,
