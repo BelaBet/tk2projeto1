@@ -44,8 +44,6 @@ const PLATFORM_ITEMS = [
   { title: "Igrejas", url: "/admin/tenants", icon: Building2 },
   { title: "Doações", url: "/admin/donations", icon: HeartHandshake },
   { title: "Financeiro", url: "/admin/financeiro", icon: Wallet },
-  { title: "Billing", url: "/admin/billing", icon: CreditCard },
-  { title: "Auditoria", url: "/admin/audit", icon: ScrollText },
   { title: "Plataforma", url: "/admin/settings", icon: Settings },
 ];
 
