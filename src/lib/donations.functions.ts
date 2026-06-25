@@ -245,7 +245,7 @@ export const getDonationDetail = createServerFn({ method: "POST" })
     let query = supabaseAdmin
       .from("payments")
       .select(
-        "id, tenant_id, method, card_brand, donation_amount, status, error_message, gateway_id, created_at, updated_at, gateway_request, reference_id, reference_type",
+        "id, tenant_id, method, card_brand, donation_amount, status, error_message, gateway_id, created_at, gateway_request, reference_id, reference_type",
       )
       .eq("id", data.paymentId)
       .eq("reference_type", "donation");
@@ -261,7 +261,6 @@ export const getDonationDetail = createServerFn({ method: "POST" })
       error_message: string | null;
       gateway_id: string | null;
       created_at: string;
-      updated_at: string | null;
       gateway_request: unknown;
       reference_id: string | null;
     };
@@ -329,7 +328,7 @@ export const getDonationDetail = createServerFn({ method: "POST" })
       errorMessage: access.isPlatformAdmin ? r.error_message : null,
       gatewayId: r.gateway_id,
       createdAt: r.created_at,
-      updatedAt: r.updated_at,
+      updatedAt: null,
       billingAddress,
       isPlatformAdmin: access.isPlatformAdmin,
     };

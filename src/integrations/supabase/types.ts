@@ -312,6 +312,7 @@ export type Database = {
           date: string | null
           description: string | null
           external_url: string
+          featured: boolean | null
           id: string
           location: string | null
           status: Database["public"]["Enums"]["event_status"]
@@ -327,6 +328,7 @@ export type Database = {
           date?: string | null
           description?: string | null
           external_url: string
+          featured?: boolean | null
           id?: string
           location?: string | null
           status?: Database["public"]["Enums"]["event_status"]
@@ -342,6 +344,7 @@ export type Database = {
           date?: string | null
           description?: string | null
           external_url?: string
+          featured?: boolean | null
           id?: string
           location?: string | null
           status?: Database["public"]["Enums"]["event_status"]
@@ -674,7 +677,6 @@ export type Database = {
           ticketto_fee: number | null
           tk2_op_fee: number | null
           transacao_fee: number | null
-          updated_at: string
         }
         Insert: {
           amount: number
@@ -705,7 +707,6 @@ export type Database = {
           ticketto_fee?: number | null
           tk2_op_fee?: number | null
           transacao_fee?: number | null
-          updated_at?: string
         }
         Update: {
           amount?: number
@@ -736,7 +737,6 @@ export type Database = {
           ticketto_fee?: number | null
           tk2_op_fee?: number | null
           transacao_fee?: number | null
-          updated_at?: string
         }
         Relationships: [
           {
@@ -1802,6 +1802,7 @@ export type Database = {
       }
       is_email_registered: { Args: { _email: string }; Returns: boolean }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
       is_tenant_staff: {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
