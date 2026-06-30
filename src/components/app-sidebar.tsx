@@ -76,9 +76,11 @@ export function AppSidebar() {
             </>
           ) : (
             <>
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                <ShieldAlert className="h-4 w-4" />
-              </div>
+              <img
+                src="/__l5e/assets-v1/64e1ae41-9cf7-45e3-ac17-3658b088a3df/ticketconnect-logo-long.jpeg"
+                alt="TicketConnect"
+                className="h-6 w-auto rounded-sm"
+              />
               {!collapsed && (
                 <div className="flex flex-col leading-tight">
                   <span className="font-display text-sm">Painel da Plataforma</span>
