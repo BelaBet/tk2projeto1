@@ -1828,7 +1828,7 @@ export function ChurchPageView({ tenantOverride }: { tenantOverride?: Tenant | n
         </p>
         {CHURCH.tagline && <p style={{ fontSize: 12, color: "#666", margin: "0 0 16px" }}>{CHURCH.tagline}</p>}
         <p style={{ fontSize: 11, color: "#999", margin: 0, letterSpacing: "0.04em" }}>
-          Tecnologia fornecida por <span style={{ color: "#666", fontWeight: 600 }}>TK2 EMPREENDIMENTOS</span>
+          Tecnologia fornecida por <span style={{ color: "#666", fontWeight: 600 }}>TicketConnect</span>
         </p>
       </footer>
     </div>
