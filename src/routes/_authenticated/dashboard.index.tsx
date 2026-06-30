@@ -118,7 +118,7 @@ function Dashboard() {
 
             <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
               <span className="inline-block h-3 w-3 rounded-full bg-emerald-500" />
-              Página segura · Powered by TK2
+              Página segura · TicketConnect
             </p>
           </div>
         </div>

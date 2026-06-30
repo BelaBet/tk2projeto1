@@ -98,7 +98,7 @@ export function CostCentersSection() {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Tipo</TableHead>
-                  <TableHead className="text-right">Split (TK2 / Igreja)</TableHead>
+                  <TableHead className="text-right">Split (TicketConnect / Igreja)</TableHead>
                   <TableHead className="text-center">Parcelas</TableHead>
                   <TableHead className="text-center">Ativo</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
