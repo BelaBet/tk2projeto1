@@ -497,7 +497,7 @@ function TenantMembersView({ tenant, onBack }: { tenant: Tenant; onBack: () => v
       <AlertDialog open={!!deleteMember} onOpenChange={(v) => !v && setDeleteMember(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir membro?</AlertDialogTitle>
+            <AlertDialogTitle>Excluir instituição?</AlertDialogTitle>
             <AlertDialogDescription>
               Remove <b>{deleteMember?.full_name ?? deleteMember?.email}</b> desta instituição.
             </AlertDialogDescription>

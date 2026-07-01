@@ -150,7 +150,7 @@ function SuperAdminPage() {
               </div>
             ))
           ) : (
-            <p className="text-sm text-muted-foreground">Nenhum membro da plataforma.</p>
+            <p className="text-sm text-muted-foreground">Nenhuma instituição da plataforma.</p>
           )}
         </CardContent>
       </Card>
