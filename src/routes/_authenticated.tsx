@@ -2,11 +2,19 @@ import { createFileRoute, Outlet, redirect, Link, useRouter, useLocation } from 
 import { useAuth } from "@/lib/auth-context";
 import { useTenant } from "@/lib/tenant-context";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, User, LogOut, Bell, Megaphone, ExternalLink } from "lucide-react";
+import { LayoutDashboard, User, LogOut, Bell, Megaphone, ExternalLink, ArrowLeft, Menu, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { initials } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
