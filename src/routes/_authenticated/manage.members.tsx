@@ -155,7 +155,7 @@ function SuperAdminMembersPage() {
               <TableRow>
                 <TableHead>Instituição</TableHead>
                 <TableHead>Slug</TableHead>
-                <TableHead>Membros</TableHead>
+                <TableHead>Instituições</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Criada em</TableHead>
                 <TableHead className="w-8"></TableHead>
@@ -189,7 +189,7 @@ function SuperAdminMembersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setSelectedTenant(t)}>
-                          <Eye className="h-4 w-4" /> Ver membros
+                          <Eye className="h-4 w-4" /> Ver instituições
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setEditTenant(t)}>
                           <Pencil className="h-4 w-4" /> Editar
@@ -376,7 +376,7 @@ function TenantMembersView({ tenant, onBack }: { tenant: Tenant; onBack: () => v
     await supabase.from("user_roles").delete().eq("user_id", deleteMember.id).eq("tenant_id", tenant.id);
     const { error } = await supabase.from("profiles").delete().eq("id", deleteMember.id);
     if (error) return toast.error(translateError(error));
-    toast.success("Membro removido");
+    toast.success("Instituição removida");
     setDeleteMember(null);
     load();
   };

@@ -82,8 +82,8 @@ function ManagerDashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <KpiCard icon={Users} label="Membros totais" value={kpis.total} loading={loading} />
-        <KpiCard icon={UserCheck} label="Membros ativos" value={kpis.active} loading={loading} hint={`${kpis.pending} pendentes`} />
+        <KpiCard icon={Users} label="Instituições totais" value={kpis.total} loading={loading} />
+        <KpiCard icon={UserCheck} label="Instituições ativas" value={kpis.active} loading={loading} hint={`${kpis.pending} pendentes`} />
         <KpiCard icon={DollarSign} label="Doações no mês" value={fmtBRL(kpis.donationsMonth)} loading={loading} />
         <KpiCard icon={Calendar} label="Eventos no mês" value={kpis.eventsMonth} loading={loading} />
         <KpiCard icon={Ticket} label="Ingressos no mês" value={kpis.ticketsMonth} loading={loading} />
