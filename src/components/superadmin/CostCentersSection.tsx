@@ -12,13 +12,13 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus, QrCode, Pencil, RefreshCw } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { translateError } from "@/lib/translate-error";
+import { DynamicQrButton } from "@/components/dynamic-qr-button";
 import {
   listCostCenters,
   toggleCostCenterActive,
-  regenerateCostCenterQr,
   type CostCenterRow,
 } from "@/lib/cost-centers.functions";
 import { CostCenterFormModal } from "./CostCenterFormModal";
@@ -27,7 +27,6 @@ export function CostCentersSection() {
   const qc = useQueryClient();
   const list = useServerFn(listCostCenters);
   const toggleFn = useServerFn(toggleCostCenterActive);
-  const regenFn = useServerFn(regenerateCostCenterQr);
 
   const [tenantId, setTenantId] = useState<string>("");
   const [modal, setModal] = useState<{ open: boolean; row: CostCenterRow | null }>({ open: false, row: null });
@@ -47,6 +46,8 @@ export function CostCentersSection() {
     if (!tenantId && tenants?.length) setTenantId(tenants[0].id);
   }, [tenants, tenantId]);
 
+  const currentTenantSlug = tenants?.find((t) => t.id === tenantId)?.slug;
+
   const { data: rows, isLoading } = useQuery({
     queryKey: ["cost-centers", tenantId],
     enabled: !!tenantId,
@@ -56,15 +57,6 @@ export function CostCentersSection() {
   const toggleMut = useMutation({
     mutationFn: (v: { id: string; isActive: boolean }) => toggleFn({ data: v }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["cost-centers", tenantId] }),
-    onError: (e) => toast.error(translateError(e)),
-  });
-
-  const regenMut = useMutation({
-    mutationFn: (id: string) => regenFn({ data: { id } }),
-    onSuccess: () => {
-      toast.success("QR Code regenerado");
-      qc.invalidateQueries({ queryKey: ["cost-centers", tenantId] });
-    },
     onError: (e) => toast.error(translateError(e)),
   });
 
@@ -132,16 +124,14 @@ export function CostCentersSection() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          {r.qr_code_url && (
-                            <Button size="icon" variant="ghost" asChild aria-label="Baixar QR">
-                              <a href={r.qr_code_url} download={`qr-${r.slug}.png`} target="_blank" rel="noreferrer">
-                                <QrCode className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          )}
-                          <Button size="icon" variant="ghost" onClick={() => regenMut.mutate(r.id)} aria-label="Regenerar QR" disabled={regenMut.isPending}>
-                            <RefreshCw className="h-4 w-4" />
-                          </Button>
+                          <DynamicQrButton
+                            url={
+                              currentTenantSlug
+                                ? `${window.location.origin}/i/${currentTenantSlug}${r.slug !== "online" ? `?cc=${r.slug}` : ""}`
+                                : ""
+                            }
+                            fileName={`qr-${r.slug}`}
+                          />
                           <Button size="icon" variant="ghost" onClick={() => setModal({ open: true, row: r })} aria-label="Editar">
                             <Pencil className="h-4 w-4" />
                           </Button>

@@ -1,15 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { QrCode, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { toast } from "sonner";
 import { translateError } from "@/lib/translate-error";
+import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
+import { DynamicQrButton } from "@/components/dynamic-qr-button";
 import {
   listCostCenters,
   toggleCostCenterActive,
@@ -19,6 +21,20 @@ export function CostCentersAdminPanel() {
   const qc = useQueryClient();
   const list = useServerFn(listCostCenters);
   const toggleFn = useServerFn(toggleCostCenterActive);
+  const { profile } = useAuth();
+
+  const { data: tenant } = useQuery({
+    queryKey: ["my-tenant-slug", profile?.tenant_id],
+    enabled: !!profile?.tenant_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tenants")
+        .select("slug, primary_color")
+        .eq("id", profile!.tenant_id)
+        .maybeSingle();
+      return data;
+    },
+  });
 
   const { data: rows, isLoading } = useQuery({
     queryKey: ["cost-centers", "my-tenant"],
@@ -76,15 +92,15 @@ export function CostCentersAdminPanel() {
                       />
                     </TableCell>
                     <TableCell className="text-right">
-                      {r.qr_code_url ? (
-                        <Button size="icon" variant="ghost" asChild aria-label="Baixar QR">
-                          <a href={r.qr_code_url} download={`qr-${r.slug}.png`} target="_blank" rel="noreferrer">
-                            <QrCode className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
+                      <DynamicQrButton
+                        url={
+                          tenant?.slug
+                            ? `${window.location.origin}/i/${tenant.slug}${r.slug !== "online" ? `?cc=${r.slug}` : ""}`
+                            : ""
+                        }
+                        fileName={`qr-${r.slug}`}
+                        primary={tenant?.primary_color ?? undefined}
+                      />
                     </TableCell>
                   </TableRow>
                 ))
