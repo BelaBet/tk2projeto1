@@ -33,7 +33,7 @@ function last7DaysRange() {
   return { periodStart: toIso(start), periodEnd: toIso(end) };
 }
 
-export function DonationsTable() {
+export function DonationsTable({ showTenantFilter = true }: { showTenantFilter?: boolean } = {}) {
   const [period] = useState(last7DaysRange);
   const [tenantFilter, setTenantFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -45,8 +45,10 @@ export function DonationsTable() {
   const tenants = useQuery({
     queryKey: ["donation-tenant-options"],
     queryFn: () => tenantsFn(),
+    enabled: showTenantFilter,
   });
-  const isPlatformView = tenants.data?.isPlatformAdmin ?? false;
+  const isPlatformView = showTenantFilter && (tenants.data?.isPlatformAdmin ?? false);
+
 
   const donations = useQuery({
     queryKey: ["donations-list", period, tenantFilter],
