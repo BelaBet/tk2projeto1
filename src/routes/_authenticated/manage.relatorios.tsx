@@ -7,5 +7,5 @@ export const Route = createFileRoute("/_authenticated/manage/relatorios")({
 });
 
 function ManageRelatorios() {
-  return <DonationsReport />;
+  return <DonationsReport showTenantFilter={false} />;
 }
