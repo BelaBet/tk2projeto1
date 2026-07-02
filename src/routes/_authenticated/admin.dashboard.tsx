@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useImpersonation } from "@/lib/impersonation";
 import { KpiCard } from "@/components/kpi-card";
 import { Card } from "@/components/ui/card";
 import { Building2, Users, Heart, TrendingUp, Calendar, Megaphone, DollarSign, Wallet } from "lucide-react";
@@ -14,20 +15,46 @@ const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 function AdminDashboard() {
+  const { active, tenantId } = useImpersonation();
+
+  const { data: tenantInfo } = useQuery({
+    queryKey: ["impersonated-tenant-name", tenantId],
+    enabled: active && !!tenantId,
+    queryFn: async () => {
+      const { data } = await supabase.from("tenants").select("name").eq("id", tenantId as string).maybeSingle();
+      return data;
+    },
+  });
+
   const { data } = useQuery({
-    queryKey: ["platform-kpis"],
+    queryKey: ["platform-kpis", active ? tenantId : null],
     queryFn: async () => {
       const since = new Date(); since.setDate(since.getDate() - 30);
       const sinceIso = since.toISOString();
+      const filterTenant = active && tenantId ? tenantId : null;
+
+      let donationsQ = supabase.from("donations").select("amount").is("deleted_at", null);
+      let monthlyQ = supabase.from("donations").select("amount").gte("created_at", sinceIso).is("deleted_at", null);
+      let txCountQ = supabase.from("payments").select("id", { count: "exact", head: true }).is("deleted_at", null);
+      let eventsQ = supabase.from("events").select("id", { count: "exact", head: true }).eq("status", "active");
+      let membersQ = supabase.from("profiles").select("id", { count: "exact", head: true });
+      let subsQ = supabase.from("tenant_subscriptions").select("plan_id, subscription_plans(monthly_price)").eq("status", "active").is("deleted_at", null);
+      let tenantsQ = supabase.from("tenants").select("id", { count: "exact", head: true }).is("deleted_at", null);
+      let activeTQ = supabase.from("tenants").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("active", true);
+
+      if (filterTenant) {
+        donationsQ = donationsQ.eq("tenant_id", filterTenant);
+        monthlyQ = monthlyQ.eq("tenant_id", filterTenant);
+        txCountQ = txCountQ.eq("tenant_id", filterTenant);
+        eventsQ = eventsQ.eq("tenant_id", filterTenant);
+        membersQ = membersQ.eq("tenant_id", filterTenant);
+        subsQ = subsQ.eq("tenant_id", filterTenant);
+        tenantsQ = tenantsQ.eq("id", filterTenant);
+        activeTQ = activeTQ.eq("id", filterTenant);
+      }
+
       const [tenants, activeT, donations, monthly, txCount, events, members, subs] = await Promise.all([
-        supabase.from("tenants").select("id", { count: "exact", head: true }).is("deleted_at", null),
-        supabase.from("tenants").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("active", true),
-        supabase.from("donations").select("amount").is("deleted_at", null),
-        supabase.from("donations").select("amount").gte("created_at", sinceIso).is("deleted_at", null),
-        supabase.from("payments").select("id", { count: "exact", head: true }).is("deleted_at", null),
-        supabase.from("events").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("tenant_subscriptions").select("plan_id, subscription_plans(monthly_price)").eq("status", "active").is("deleted_at", null),
+        tenantsQ, activeTQ, donationsQ, monthlyQ, txCountQ, eventsQ, membersQ, subsQ,
       ]);
       const total = (donations.data ?? []).reduce((s, d: { amount: number }) => s + Number(d.amount), 0);
       const month = (monthly.data ?? []).reduce((s, d: { amount: number }) => s + Number(d.amount), 0);
@@ -58,12 +85,15 @@ function AdminDashboard() {
   ];
 
   const { data: ranking } = useQuery({
-    queryKey: ["platform-tenant-ranking"],
+    queryKey: ["platform-tenant-ranking", active ? tenantId : null],
     queryFn: async () => {
-      const [{ data: tenants }, { data: dons }] = await Promise.all([
-        supabase.from("tenants").select("id,name,slug").is("deleted_at", null),
-        supabase.from("donations").select("tenant_id,amount").is("deleted_at", null),
-      ]);
+      let tenantsQ = supabase.from("tenants").select("id,name,slug").is("deleted_at", null);
+      let donsQ = supabase.from("donations").select("tenant_id,amount").is("deleted_at", null);
+      if (active && tenantId) {
+        tenantsQ = tenantsQ.eq("id", tenantId);
+        donsQ = donsQ.eq("tenant_id", tenantId);
+      }
+      const [{ data: tenants }, { data: dons }] = await Promise.all([tenantsQ, donsQ]);
       const totals = new Map<string, number>();
       (dons ?? []).forEach((d: { tenant_id: string; amount: number }) => {
         totals.set(d.tenant_id, (totals.get(d.tenant_id) ?? 0) + Number(d.amount));
@@ -78,8 +108,14 @@ function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl">Visão Global da Plataforma</h1>
-        <p className="text-sm text-muted-foreground">KPIs consolidados de todas as igrejas.</p>
+        <h1 className="font-display text-3xl">
+          {active && tenantId ? `Visão de: ${tenantInfo?.name ?? "…"}` : "Visão Global da Plataforma"}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {active && tenantId
+            ? 'KPIs desta instituição. Clique em "Sair da impersonação" na barra amarela no topo para ver a plataforma inteira novamente.'
+            : "KPIs consolidados de todas as igrejas."}
+        </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {kpis.map((k) => (
