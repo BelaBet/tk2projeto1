@@ -82,7 +82,7 @@ function buildPdf(items: DonationReportItem[], periodStart: string, periodEnd: s
         { key: "donorPhone", label: "Telefone", width: 70 },
         { key: "donorEmail", label: "E-mail", width: 110 },
         { key: "paymentMethod", label: "Pagamento", width: 65 },
-        { key: "grossAmountCents", label: "Valor da Doação", width: 75 },
+        { key: "donationAmountCents", label: "Valor da Doação", width: 75 },
         { key: "adminFeeCents", label: "Taxa Adm.", width: 65 },
       ]
     : [
@@ -92,7 +92,7 @@ function buildPdf(items: DonationReportItem[], periodStart: string, periodEnd: s
         { key: "donorPhone", label: "Telefone", width: 85 },
         { key: "donorEmail", label: "E-mail", width: 150 },
         { key: "paymentMethod", label: "Pagamento", width: 80 },
-        { key: "grossAmountCents", label: "Valor da Doação", width: 100 },
+        { key: "donationAmountCents", label: "Valor da Doação", width: 100 },
         { key: "adminFeeCents", label: "Taxa Adm.", width: 90 },
       ];
 
@@ -137,7 +137,7 @@ function buildPdf(items: DonationReportItem[], periodStart: string, periodEnd: s
       donorPhone: item.donorPhone ?? "—",
       donorEmail: item.donorEmail ?? "—",
       paymentMethod: translateMethod(item.paymentMethod) + (item.cardBrand ? ` (${item.cardBrand})` : ""),
-      grossAmountCents: brl(item.grossAmountCents),
+      donationAmountCents: brl(item.donationAmountCents),
       adminFeeCents: brl(item.adminFeeCents),
     };
 
@@ -149,7 +149,7 @@ function buildPdf(items: DonationReportItem[], periodStart: string, periodEnd: s
     }
     y += rowHeight;
 
-    totalDonation += item.grossAmountCents;
+    totalDonation += item.donationAmountCents;
     totalFee += item.adminFeeCents;
   }
 
@@ -193,7 +193,7 @@ export function DonationsReport() {
 
   const items = report.data?.items ?? [];
   const isPlatformAdmin = report.data?.isPlatformAdmin ?? false;
-  const totalDonation = items.reduce((sum, i) => sum + i.grossAmountCents, 0);
+  const totalDonation = items.reduce((sum, i) => sum + i.donationAmountCents, 0);
   const totalFee = items.reduce((sum, i) => sum + i.adminFeeCents, 0);
 
   const tenantLabel = isPlatformAdmin
@@ -323,7 +323,7 @@ export function DonationsReport() {
                         {translateMethod(d.paymentMethod)}
                         {d.cardBrand ? ` · ${d.cardBrand}` : ""}
                       </TableCell>
-                      <TableCell className="text-right font-medium">{brl(d.grossAmountCents)}</TableCell>
+                      <TableCell className="text-right font-medium">{brl(d.donationAmountCents)}</TableCell>
                       <TableCell className="text-right text-muted-foreground">
                         {brl(d.adminFeeCents)}
                       </TableCell>

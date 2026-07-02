@@ -349,7 +349,10 @@ export type DonationReportItem = {
   paymentMethod: string | null;
   installments: number | null;
   cardBrand: string | null;
-  grossAmountCents: number; // "Valor da doação"
+  donationAmountCents: number; // "Valor da doação" — sempre o valor puro (net_amount).
+  // Como quem paga a taxa é o doador (who_pays='donor'), gross_amount = doação + taxa
+  // somadas, e net_amount = só a doação. Usar net_amount aqui evita mostrar a taxa
+  // embutida como se fosse parte do valor doado.
   adminFeeCents: number; // "Taxa de administração" (já consolidada)
   tenantName: string | null; // só preenchido para super admin
   createdAt: string;
@@ -385,7 +388,7 @@ export const getDonationsReport = createServerFn({ method: "POST" })
     let query = supabaseAdmin
       .from("donations")
       .select(
-        "id, tenant_id, donor_name, donor_document, donor_phone, donor_email, payment_method, installments, card_brand, gross_amount, admin_fee, created_at",
+        "id, tenant_id, donor_name, donor_document, donor_phone, donor_email, payment_method, installments, card_brand, net_amount, admin_fee, created_at",
       )
       .is("deleted_at", null)
       .gte("created_at", `${data.periodStart}T00:00:00.000Z`)
@@ -411,7 +414,7 @@ export const getDonationsReport = createServerFn({ method: "POST" })
       payment_method: string | null;
       installments: number | null;
       card_brand: string | null;
-      gross_amount: number | null;
+      net_amount: number | null;
       admin_fee: number | null;
       created_at: string;
     };
@@ -439,7 +442,7 @@ export const getDonationsReport = createServerFn({ method: "POST" })
       paymentMethod: d.payment_method,
       installments: d.installments,
       cardBrand: d.card_brand,
-      grossAmountCents: d.gross_amount ?? 0,
+      donationAmountCents: d.net_amount ?? 0,
       adminFeeCents: d.admin_fee ?? 0,
       tenantName: access.isPlatformAdmin ? (tenantNameById.get(d.tenant_id) ?? null) : null,
       createdAt: d.created_at,
