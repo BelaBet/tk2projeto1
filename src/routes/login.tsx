@@ -63,8 +63,9 @@ function LoginPage() {
         <img
           src="/__l5e/assets-v1/64e1ae41-9cf7-45e3-ac17-3658b088a3df/ticketconnect-logo-long.jpeg"
           alt="TicketConnect"
-          className="mx-auto mb-4 h-10 w-auto"
+          className="mx-auto mb-6 h-24 w-auto sm:h-28"
         />
+
         <h1 className="font-display text-3xl">Bem-Vindo a Ticketconnect</h1>
         <p className="mt-1 text-sm text-muted-foreground">Acesse sua conta.</p>
         {emailConfirmed && (
