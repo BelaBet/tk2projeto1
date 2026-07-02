@@ -388,7 +388,7 @@ export const getDonationsReport = createServerFn({ method: "POST" })
     let query = supabaseAdmin
       .from("donations")
       .select(
-        "id, tenant_id, donor_name, donor_document, donor_phone, donor_email, payment_method, installments, card_brand, net_amount, admin_fee, created_at",
+        "id, tenant_id, donor_name, donor_document, donor_phone, donor_email, payment_method, installments, card_brand, gross_amount, net_amount, admin_fee, created_at",
       )
       .is("deleted_at", null)
       .gte("created_at", `${data.periodStart}T00:00:00.000Z`)
@@ -414,6 +414,7 @@ export const getDonationsReport = createServerFn({ method: "POST" })
       payment_method: string | null;
       installments: number | null;
       card_brand: string | null;
+      gross_amount: number | null;
       net_amount: number | null;
       admin_fee: number | null;
       created_at: string;
@@ -433,20 +434,29 @@ export const getDonationsReport = createServerFn({ method: "POST" })
       }
     }
 
-    const items: DonationReportItem[] = donations.map((d) => ({
-      id: d.id,
-      donorName: d.donor_name,
-      donorDocument: d.donor_document,
-      donorPhone: d.donor_phone,
-      donorEmail: d.donor_email,
-      paymentMethod: d.payment_method,
-      installments: d.installments,
-      cardBrand: d.card_brand,
-      donationAmountCents: d.net_amount ?? 0,
-      adminFeeCents: d.admin_fee ?? 0,
-      tenantName: access.isPlatformAdmin ? (tenantNameById.get(d.tenant_id) ?? null) : null,
-      createdAt: d.created_at,
-    }));
+    const items: DonationReportItem[] = donations.map((d) => {
+      const net = d.net_amount ?? 0;
+      const gross = d.gross_amount ?? net;
+      // Taxa de administração real cobrada do doador = tudo que veio além da doação
+      // (inclui ADM TK2 + adquirente + taxa fixa Pagar.me). O campo admin_fee guarda
+      // apenas a parcela ADM TK2 (3,52%), por isso não pode ser usado como "taxa total".
+      const totalFee = Math.max(gross - net, 0);
+      return {
+        id: d.id,
+        donorName: d.donor_name,
+        donorDocument: d.donor_document,
+        donorPhone: d.donor_phone,
+        donorEmail: d.donor_email,
+        paymentMethod: d.payment_method,
+        installments: d.installments,
+        cardBrand: d.card_brand,
+        donationAmountCents: net,
+        adminFeeCents: totalFee,
+        tenantName: access.isPlatformAdmin ? (tenantNameById.get(d.tenant_id) ?? null) : null,
+        createdAt: d.created_at,
+      };
+    });
+
 
     return { items, isPlatformAdmin: access.isPlatformAdmin };
   });
