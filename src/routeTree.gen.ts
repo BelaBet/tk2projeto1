@@ -22,7 +22,6 @@ import { Route as AuthenticatedSuperAdminRouteImport } from './routes/_authentic
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedManageRouteImport } from './routes/_authenticated/manage'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -33,6 +32,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as ApiPublicCreateDonationRouteImport } from './routes/api/public/create-donation'
 import { Route as AuthenticatedManageSettingsRouteImport } from './routes/_authenticated/manage.settings'
 import { Route as AuthenticatedManageRelatoriosRouteImport } from './routes/_authenticated/manage.relatorios'
+import { Route as AuthenticatedManageMensagensRouteImport } from './routes/_authenticated/manage.mensagens'
 import { Route as AuthenticatedManageMembersRouteImport } from './routes/_authenticated/manage.members'
 import { Route as AuthenticatedManageEventsRouteImport } from './routes/_authenticated/manage.events'
 import { Route as AuthenticatedManageDonationsRouteImport } from './routes/_authenticated/manage.donations'
@@ -116,11 +116,6 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
-  id: '/messages',
-  path: '/messages',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedManageRoute = AuthenticatedManageRouteImport.update({
   id: '/manage',
   path: '/manage',
@@ -174,6 +169,12 @@ const AuthenticatedManageRelatoriosRoute =
   AuthenticatedManageRelatoriosRouteImport.update({
     id: '/relatorios',
     path: '/relatorios',
+    getParentRoute: () => AuthenticatedManageRoute,
+  } as any)
+const AuthenticatedManageMensagensRoute =
+  AuthenticatedManageMensagensRouteImport.update({
+    id: '/mensagens',
+    path: '/mensagens',
     getParentRoute: () => AuthenticatedManageRoute,
   } as any)
 const AuthenticatedManageMembersRoute =
@@ -288,7 +289,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/manage': typeof AuthenticatedManageRouteWithChildren
-  '/messages': typeof AuthenticatedMessagesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/scan': typeof AuthenticatedScanRoute
@@ -311,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/manage/donations': typeof AuthenticatedManageDonationsRoute
   '/manage/events': typeof AuthenticatedManageEventsRoute
   '/manage/members': typeof AuthenticatedManageMembersRoute
+  '/manage/mensagens': typeof AuthenticatedManageMensagensRoute
   '/manage/relatorios': typeof AuthenticatedManageRelatoriosRoute
   '/manage/settings': typeof AuthenticatedManageSettingsRoute
   '/api/public/create-donation': typeof ApiPublicCreateDonationRoute
@@ -327,7 +328,6 @@ export interface FileRoutesByTo {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/messages': typeof AuthenticatedMessagesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/scan': typeof AuthenticatedScanRoute
@@ -350,6 +350,7 @@ export interface FileRoutesByTo {
   '/manage/donations': typeof AuthenticatedManageDonationsRoute
   '/manage/events': typeof AuthenticatedManageEventsRoute
   '/manage/members': typeof AuthenticatedManageMembersRoute
+  '/manage/mensagens': typeof AuthenticatedManageMensagensRoute
   '/manage/relatorios': typeof AuthenticatedManageRelatoriosRoute
   '/manage/settings': typeof AuthenticatedManageSettingsRoute
   '/api/public/create-donation': typeof ApiPublicCreateDonationRoute
@@ -371,7 +372,6 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/manage': typeof AuthenticatedManageRouteWithChildren
-  '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
@@ -394,6 +394,7 @@ export interface FileRoutesById {
   '/_authenticated/manage/donations': typeof AuthenticatedManageDonationsRoute
   '/_authenticated/manage/events': typeof AuthenticatedManageEventsRoute
   '/_authenticated/manage/members': typeof AuthenticatedManageMembersRoute
+  '/_authenticated/manage/mensagens': typeof AuthenticatedManageMensagensRoute
   '/_authenticated/manage/relatorios': typeof AuthenticatedManageRelatoriosRoute
   '/_authenticated/manage/settings': typeof AuthenticatedManageSettingsRoute
   '/api/public/create-donation': typeof ApiPublicCreateDonationRoute
@@ -415,7 +416,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/manage'
-    | '/messages'
     | '/notifications'
     | '/profile'
     | '/scan'
@@ -438,6 +438,7 @@ export interface FileRouteTypes {
     | '/manage/donations'
     | '/manage/events'
     | '/manage/members'
+    | '/manage/mensagens'
     | '/manage/relatorios'
     | '/manage/settings'
     | '/api/public/create-donation'
@@ -454,7 +455,6 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/reset-password'
     | '/signup'
-    | '/messages'
     | '/notifications'
     | '/profile'
     | '/scan'
@@ -477,6 +477,7 @@ export interface FileRouteTypes {
     | '/manage/donations'
     | '/manage/events'
     | '/manage/members'
+    | '/manage/mensagens'
     | '/manage/relatorios'
     | '/manage/settings'
     | '/api/public/create-donation'
@@ -497,7 +498,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/manage'
-    | '/_authenticated/messages'
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
     | '/_authenticated/scan'
@@ -520,6 +520,7 @@ export interface FileRouteTypes {
     | '/_authenticated/manage/donations'
     | '/_authenticated/manage/events'
     | '/_authenticated/manage/members'
+    | '/_authenticated/manage/mensagens'
     | '/_authenticated/manage/relatorios'
     | '/_authenticated/manage/settings'
     | '/api/public/create-donation'
@@ -636,13 +637,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/messages': {
-      id: '/_authenticated/messages'
-      path: '/messages'
-      fullPath: '/messages'
-      preLoaderRoute: typeof AuthenticatedMessagesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/manage': {
       id: '/_authenticated/manage'
       path: '/manage'
@@ -711,6 +705,13 @@ declare module '@tanstack/react-router' {
       path: '/relatorios'
       fullPath: '/manage/relatorios'
       preLoaderRoute: typeof AuthenticatedManageRelatoriosRouteImport
+      parentRoute: typeof AuthenticatedManageRoute
+    }
+    '/_authenticated/manage/mensagens': {
+      id: '/_authenticated/manage/mensagens'
+      path: '/mensagens'
+      fullPath: '/manage/mensagens'
+      preLoaderRoute: typeof AuthenticatedManageMensagensRouteImport
       parentRoute: typeof AuthenticatedManageRoute
     }
     '/_authenticated/manage/members': {
@@ -886,6 +887,7 @@ interface AuthenticatedManageRouteChildren {
   AuthenticatedManageDonationsRoute: typeof AuthenticatedManageDonationsRoute
   AuthenticatedManageEventsRoute: typeof AuthenticatedManageEventsRoute
   AuthenticatedManageMembersRoute: typeof AuthenticatedManageMembersRoute
+  AuthenticatedManageMensagensRoute: typeof AuthenticatedManageMensagensRoute
   AuthenticatedManageRelatoriosRoute: typeof AuthenticatedManageRelatoriosRoute
   AuthenticatedManageSettingsRoute: typeof AuthenticatedManageSettingsRoute
   AuthenticatedManageIndexRoute: typeof AuthenticatedManageIndexRoute
@@ -896,6 +898,7 @@ const AuthenticatedManageRouteChildren: AuthenticatedManageRouteChildren = {
   AuthenticatedManageDonationsRoute: AuthenticatedManageDonationsRoute,
   AuthenticatedManageEventsRoute: AuthenticatedManageEventsRoute,
   AuthenticatedManageMembersRoute: AuthenticatedManageMembersRoute,
+  AuthenticatedManageMensagensRoute: AuthenticatedManageMensagensRoute,
   AuthenticatedManageRelatoriosRoute: AuthenticatedManageRelatoriosRoute,
   AuthenticatedManageSettingsRoute: AuthenticatedManageSettingsRoute,
   AuthenticatedManageIndexRoute: AuthenticatedManageIndexRoute,
@@ -908,7 +911,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
   AuthenticatedManageRoute: typeof AuthenticatedManageRouteWithChildren
-  AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedScanRoute: typeof AuthenticatedScanRoute
@@ -923,7 +925,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
   AuthenticatedManageRoute: AuthenticatedManageRouteWithChildren,
-  AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedScanRoute: AuthenticatedScanRoute,

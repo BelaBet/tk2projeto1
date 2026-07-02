@@ -20,6 +20,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Calendar, ExternalLink, Plus } from "lucide-react";
+import { BackButton } from "@/components/back-button";
 import { toast } from "sonner";
 import { translateError } from "@/lib/translate-error";
 import { externalEventUrlSchema, TICKETTO_BASE, isTickettoUrl } from "@/lib/validators/url";
@@ -137,7 +138,8 @@ function ManageEventsPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4">
+      <BackButton />
+      <div className="mt-3 flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl md:text-4xl">Eventos</h1>
           <p className="mt-1 text-muted-foreground">

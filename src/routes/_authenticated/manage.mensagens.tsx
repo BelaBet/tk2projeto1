@@ -9,9 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Megaphone } from "lucide-react";
 import { toast } from "sonner";
 import { translateError } from "@/lib/translate-error";
+import { BackButton } from "@/components/back-button";
 
-export const Route = createFileRoute("/_authenticated/messages")({
+export const Route = createFileRoute("/_authenticated/manage/mensagens")({
   component: MessagesPage,
+  head: () => ({ meta: [{ title: "Mensagens" }] }),
 });
 
 function MessagesPage() {
@@ -70,6 +72,7 @@ function MessagesPage() {
 
   return (
     <div className="space-y-6">
+      <BackButton />
       <div>
         <h1 className="font-display text-3xl">Mensagens</h1>
         <p className="text-sm text-muted-foreground">Envie comunicados para sua comunidade</p>

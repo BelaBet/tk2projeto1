@@ -133,7 +133,7 @@ function AuthLayout() {
                 </a>
               </Button>
             )}
-            <Button asChild variant="ghost" size="sm"><Link to="/messages">Mensagens</Link></Button>
+            <Button asChild variant="ghost" size="sm"><Link to="/manage/mensagens">Mensagens</Link></Button>
             <Button asChild variant="ghost" size="sm"><Link to="/notifications"><Bell className="h-4 w-4" /></Link></Button>
             {isStaff && <Button asChild variant="default" size="sm"><Link to="/manage/dashboard">Gestão</Link></Button>}
             {isPlatformAdmin && <Button asChild variant="default" size="sm"><Link to="/admin/dashboard"><ShieldAlert className="h-4 w-4 mr-1" /> Plataforma</Link></Button>}
@@ -153,7 +153,7 @@ function AuthLayout() {
                 <DropdownMenuLabel>{profile?.full_name ?? user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild><Link to="/dashboard"><LayoutDashboard className="h-4 w-4 mr-2" />Painel</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/messages"><Megaphone className="h-4 w-4 mr-2" />Mensagens</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/manage/mensagens"><Megaphone className="h-4 w-4 mr-2" />Mensagens</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to="/notifications"><Bell className="h-4 w-4 mr-2" />Avisos</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to="/profile"><User className="h-4 w-4 mr-2" />Perfil</Link></DropdownMenuItem>
                 {isStaff && (
@@ -193,7 +193,7 @@ function AuthLayout() {
       <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t bg-card md:hidden">
         {[
           { to: "/dashboard", label: "Painel", icon: LayoutDashboard },
-          { to: "/messages", label: "Mensagens", icon: Megaphone },
+          { to: "/manage/mensagens", label: "Mensagens", icon: Megaphone },
           { to: "/notifications", label: "Avisos", icon: Bell },
           { to: "/profile", label: "Perfil", icon: User },
         ].map((i) => (

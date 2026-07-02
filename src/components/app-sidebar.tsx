@@ -36,7 +36,7 @@ const MANAGE_ITEMS = [
   { title: "Relatórios", url: "/manage/relatorios", icon: ScrollText },
   { title: "Instituições", url: "/manage/members", icon: Users },
   { title: "Eventos", url: "/manage/events", icon: Calendar },
-  { title: "Mensagens", url: "/messages", icon: Megaphone },
+  { title: "Mensagens", url: "/manage/mensagens", icon: Megaphone },
   { title: "Configurações", url: "/manage/settings", icon: Settings },
 ];
 
