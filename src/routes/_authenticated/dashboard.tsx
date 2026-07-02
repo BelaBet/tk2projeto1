@@ -17,7 +17,6 @@ function DashboardLayout() {
         <AppSidebar />
         <div className="flex flex-1 flex-col">
           <header className="flex h-12 items-center justify-between gap-3 border-b bg-card/60 px-3 backdrop-blur">
-            <style={{ height: '1.5rem', width: 'auto' }}
             <div className="flex items-center gap-2">
               <SidebarTrigger />
             </div>
