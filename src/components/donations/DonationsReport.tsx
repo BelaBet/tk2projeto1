@@ -23,13 +23,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { brl, fmtDate, translateMethod } from "@/components/financeiro/format";
+import { brl, fmtDate, translateMethod, translateStatus } from "@/components/financeiro/format";
 import {
   getDonationsReport,
   getTenantOptions,
   type DonationReportItem,
 } from "@/lib/donations.functions";
-import { Download, FileText, Inbox } from "lucide-react";
+import { getWithdrawalsReport, type WithdrawalReportItem } from "@/lib/recipient.functions";
+import { Download, FileText, Inbox, Landmark } from "lucide-react";
 
 function currentMonthRange() {
   const now = new Date();
@@ -59,7 +60,14 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-async function buildPdf(items: DonationReportItem[], periodStart: string, periodEnd: string, isPlatformAdmin: boolean, tenantLabel: string) {
+async function buildPdf(
+  items: DonationReportItem[],
+  withdrawalItems: WithdrawalReportItem[],
+  periodStart: string,
+  periodEnd: string,
+  isPlatformAdmin: boolean,
+  tenantLabel: string,
+) {
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const marginX = 32;
@@ -182,6 +190,87 @@ async function buildPdf(items: DonationReportItem[], periodStart: string, period
   doc.text(`Valor total das doações: ${brl(totalDonation)}`, marginX + 180, y);
   doc.text(`Total de taxa de administração: ${brl(totalFee)}`, marginX + 400, y);
 
+  // ── Seção de retiradas / saques / antecipações ──────────────────────────
+  if (withdrawalItems.length > 0) {
+    y += 30;
+    if (y > doc.internal.pageSize.getHeight() - 100) {
+      doc.addPage();
+      y = 40;
+    }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Retiradas e Antecipações", marginX, y);
+    y += 18;
+
+    const wColumns = [
+      { key: "createdAt", label: "Data", width: 90 },
+      { key: "type", label: "Tipo", width: 100 },
+      { key: "status", label: "Status", width: 90 },
+      { key: "amountCents", label: "Valor", width: 100 },
+      { key: "feeCents", label: "Taxa", width: 100 },
+    ];
+
+    function drawWHeader() {
+      doc.setFillColor(230, 224, 209);
+      doc.rect(marginX, y, pageWidth - marginX * 2, headerHeight, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      let x = marginX + 4;
+      for (const col of wColumns) {
+        doc.text(col.label, x, y + 12);
+        x += col.width;
+      }
+      y += headerHeight;
+    }
+
+    drawWHeader();
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+
+    let totalWithdrawn = 0;
+    let totalWithdrawalFee = 0;
+    const typeLabel: Record<string, string> = { transfer: "Retirada (saque)", anticipation: "Antecipação" };
+    const statusLabel: Record<string, string> = {
+      paid: "Pago", transferred: "Transferido", pending: "Pendente",
+      processing: "Processando", failed: "Falhou", canceled: "Cancelado",
+    };
+
+    for (const w of withdrawalItems) {
+      if (y > doc.internal.pageSize.getHeight() - 60) {
+        doc.addPage();
+        y = 40;
+        drawWHeader();
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+      }
+      let x = marginX + 4;
+      const values: Record<string, string> = {
+        createdAt: fmtDate(w.createdAt),
+        type: typeLabel[w.type] ?? w.type,
+        status: statusLabel[w.status] ?? w.status,
+        amountCents: brl(w.amountCents),
+        feeCents: brl(w.feeCents),
+      };
+      for (const col of wColumns) {
+        doc.text(values[col.key] ?? "—", x, y + 11);
+        x += col.width;
+      }
+      y += rowHeight;
+      totalWithdrawn += w.amountCents;
+      totalWithdrawalFee += w.feeCents;
+    }
+
+    y += 10;
+    doc.setDrawColor(200);
+    doc.line(marginX, y, pageWidth - marginX, y);
+    y += 16;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(`Total de retiradas/antecipações: ${withdrawalItems.length}`, marginX, y);
+    doc.text(`Valor total retirado: ${brl(totalWithdrawn)}`, marginX + 220, y);
+    doc.text(`Taxa de antecipação total: ${brl(totalWithdrawalFee)}`, marginX + 420, y);
+  }
+
   const fileName = `relatorio-doacoes_${periodStart}_a_${periodEnd}.pdf`;
   doc.save(fileName);
 }
@@ -217,6 +306,26 @@ export function DonationsReport({ showTenantFilter = true }: { showTenantFilter?
   const isPlatformAdmin = showTenantFilter && (report.data?.isPlatformAdmin ?? false);
   const totalDonation = items.reduce((sum, i) => sum + i.donationAmountCents, 0);
   const totalFee = items.reduce((sum, i) => sum + i.adminFeeCents, 0);
+
+  // Saques/retiradas e antecipações: sempre disponível para a igreja (própria
+  // instituição). Para o super admin só faz sentido quando uma instituição
+  // específica está selecionada — "Todas as instituições" não tem um único
+  // recipient para consultar no Pagar.me.
+  const withdrawalsFn = useServerFn(getWithdrawalsReport);
+  const canLoadWithdrawals = !isPlatformView || tenantFilter !== "all";
+  const withdrawals = useQuery({
+    queryKey: ["withdrawals-report", period, tenantFilter],
+    enabled: canLoadWithdrawals,
+    queryFn: () =>
+      withdrawalsFn({
+        data: {
+          ...period,
+          tenantId: isPlatformView && tenantFilter !== "all" ? tenantFilter : undefined,
+        },
+      }),
+  });
+  const withdrawalItems = withdrawals.data?.items ?? [];
+  const totalWithdrawals = withdrawalItems.reduce((s, w) => s + w.amountCents, 0);
 
   const tenantLabel = isPlatformAdmin
     ? tenantFilter === "all"
@@ -277,12 +386,12 @@ export function DonationsReport({ showTenantFilter = true }: { showTenantFilter?
           onClick={async () => {
             setGeneratingPdf(true);
             try {
-              await buildPdf(items, period.periodStart, period.periodEnd, isPlatformAdmin, tenantLabel);
+              await buildPdf(items, withdrawalItems, period.periodStart, period.periodEnd, isPlatformAdmin, tenantLabel);
             } finally {
               setGeneratingPdf(false);
             }
           }}
-          disabled={items.length === 0 || generatingPdf}
+          disabled={(items.length === 0 && withdrawalItems.length === 0) || generatingPdf}
           className="gap-2"
         >
           <Download className="h-4 w-4" />
@@ -364,6 +473,66 @@ export function DonationsReport({ showTenantFilter = true }: { showTenantFilter?
           </Card>
         </>
       )}
+
+      {/* Retiradas (saques) e antecipações — mesmos dados já incluídos no PDF,
+          agora também visíveis na pré-visualização antes de baixar. */}
+      {withdrawals.isLoading ? (
+        <Card>
+          <CardContent className="space-y-2 p-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </Card>
+      ) : withdrawals.data?.unavailable ? (
+        <p className="text-xs text-muted-foreground">
+          Retiradas e antecipações não ficam disponíveis para "Todas as instituições" — selecione uma
+          instituição específica para ver esses dados.
+        </p>
+      ) : withdrawalItems.length > 0 ? (
+        <>
+          <div>
+            <h2 className="font-display text-xl">Retiradas e antecipações</h2>
+            <div className="mt-1 flex flex-wrap gap-4 text-sm text-muted-foreground">
+              <span>
+                <strong className="text-foreground">{withdrawalItems.length}</strong> movimentações
+              </span>
+              <span>
+                Valor total: <strong className="text-foreground">{brl(totalWithdrawals)}</strong>
+              </span>
+            </div>
+          </div>
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Valor</TableHead>
+                    <TableHead className="text-right">Taxa</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {withdrawalItems.map((w) => (
+                    <TableRow key={w.id}>
+                      <TableCell className="text-muted-foreground">{fmtDate(w.createdAt)}</TableCell>
+                      <TableCell className="font-medium">
+                        {w.type === "transfer" ? "Retirada (saque)" : "Antecipação"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{translateStatus(w.status)}</TableCell>
+                      <TableCell className="text-right font-medium">{brl(w.amountCents)}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {w.feeCents > 0 ? brl(w.feeCents) : "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </>
+      ) : null}
 
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <FileText className="h-3.5 w-3.5" />
