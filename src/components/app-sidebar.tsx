@@ -44,7 +44,7 @@ const PLATFORM_ITEMS = [
   { title: "Doações", url: "/admin/donations", icon: HeartHandshake },
   { title: "Relatórios", url: "/admin/relatorios", icon: ScrollText },
   { title: "Financeiro", url: "/admin/financeiro", icon: Wallet },
-  { title: "Plataforma", url: "/admin/settings", icon: Settings },
+  { title: "Plataforma TicketConnect", url: "/admin/settings", icon: Settings },
 ];
 
 /**
@@ -116,7 +116,7 @@ export function AppSidebar() {
 
         {isPlatformAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
+            <SidebarGroupLabel>Plataforma TicketConnect</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {PLATFORM_ITEMS.map((i) => (
