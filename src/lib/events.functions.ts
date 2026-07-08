@@ -37,3 +37,25 @@ export const uploadEventBanner = createServerFn({ method: "POST" })
     const { data: pub } = supabaseAdmin.storage.from("event-banners").getPublicUrl(path);
     return { url: pub.publicUrl };
   });
+
+/** Lista todos os eventos de todas as igrejas (apenas plataforma). */
+export const getAllEvents = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: roles } = await supabaseAdmin
+      .from("platform_roles")
+      .select("role")
+      .eq("user_id", context.userId);
+    if (!roles?.length) {
+      throw new Error("Acesso restrito a administradores da plataforma.");
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("events")
+      .select(
+        "id,title,date,location,description,banner_url,external_url,status,created_at,tenant_id,tenants(name,slug)"
+      )
+      .order("date", { ascending: false, nullsFirst: false });
+    if (error) throw error;
+    return data ?? [];
+  });
