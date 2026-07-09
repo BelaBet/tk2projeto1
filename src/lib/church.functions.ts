@@ -3,6 +3,29 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+/**
+ * Eventos públicos (não-draft) de UMA instituição, para a página pública de
+ * doação (church-page.tsx). Não usa o client do navegador porque a policy
+ * events_public_active_select é só TO anon — um visitante LOGADO (ex: staff
+ * testando a própria página, ou super admin) não é anon nem
+ * necessariamente staff/membro exatamente daquele tenant, e ficaria sem ver
+ * nada mesmo a página existindo. Usando supabaseAdmin aqui, o resultado é o
+ * mesmo pra qualquer visitante, logado ou não — sempre escopado só ao
+ * tenantId explicitamente pedido (nunca vaza outras instituições).
+ */
+export const getPublicChurchEvents = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ tenantId: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { data: events, error } = await supabaseAdmin
+      .from("events")
+      .select("id,title,date,location,description,banner_url,external_url,status")
+      .eq("tenant_id", data.tenantId)
+      .neq("status", "draft")
+      .order("date", { ascending: true, nullsFirst: false });
+    if (error) throw new Error(error.message);
+    return events ?? [];
+  });
+
 const LogoSchema = z
   .object({
     base64: z.string().min(1).max(8_000_000), // ~6MB image

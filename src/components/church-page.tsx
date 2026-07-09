@@ -27,7 +27,9 @@ import { useTenant, type Tenant } from "@/lib/tenant-context";
 import { useChurchTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { getPublicChurchEvents } from "@/lib/church.functions";
 
 function TK2LandingPage() {
   return (
@@ -1285,17 +1287,13 @@ export function ChurchPageView({ tenantOverride }: { tenantOverride?: Tenant | n
   });
 
   // ── Eventos reais do tenant (públicos, não-draft) ──
+  const fetchPublicEvents = useServerFn(getPublicChurchEvents);
   const { data: publicEvents } = useQuery({
     queryKey: ["public-events", tenant?.id],
     enabled: !!tenant?.id,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("events")
-        .select("id,title,date,location,description,banner_url,external_url,status")
-        .eq("tenant_id", tenant!.id)
-        .neq("status", "draft")
-        .order("date", { ascending: true, nullsFirst: false });
-      return (data ?? []) as Array<{
+      const events = await fetchPublicEvents({ data: { tenantId: tenant!.id } });
+      return events as Array<{
         id: string;
         title: string;
         date: string | null;
