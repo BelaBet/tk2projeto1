@@ -7,7 +7,29 @@ const InputSchema = z.object({
   base64: z.string().min(1).max(8_000_000), // ~6MB
   contentType: z.string().regex(/^image\/(png|jpe?g|webp)$/, "Tipo de imagem inválido"),
   filename: z.string().min(1).max(120),
+  tenantId: z.string().uuid().optional(),
 });
+
+const AdminEventSchema = z.object({
+  tenant_id: z.string().uuid(),
+  title: z.string().trim().min(2).max(140),
+  date: z.string().datetime().nullable().optional(),
+  location: z.string().trim().max(200).nullable().optional(),
+  description: z.string().trim().max(2000).nullable().optional(),
+  banner_url: z.string().url().nullable().optional(),
+  external_url: z.string().url(),
+});
+
+async function assertPlatformAdmin(userId: string) {
+  const { data: roles } = await supabaseAdmin
+    .from("platform_roles")
+    .select("role")
+    .eq("user_id", userId);
+  if (!roles?.length) {
+    throw new Error("Acesso restrito a administradores da plataforma.");
+  }
+}
+
 
 /** Upload do banner de um evento para o bucket público event-banners. */
 export const uploadEventBanner = createServerFn({ method: "POST" })
