@@ -20,7 +20,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  *
  * Endereço de cobrança (cartão/boleto) não tem coluna própria — é extraído
  * em tempo real de payments.gateway_request (jsonb), que é bloqueado para
- * o client (REVOKE SELECT) e só acessado aqui via supabaseAdmin no server.
+ * o client (REVOKE SELECT) e só acessado aqui via ctx.supabase no server.
  * Doações via Pix não têm endereço (não é coletado nesse fluxo).
  */
 
@@ -30,9 +30,9 @@ type Ctx = {
 };
 
 async function resolveAccess(ctx: Ctx) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  
 
-  const { data: roleRow } = await supabaseAdmin
+  const { data: roleRow } = await ctx.supabase
     .from("platform_roles")
     .select("user_id")
     .eq("user_id", ctx.userId)
@@ -48,7 +48,7 @@ async function resolveAccess(ctx: Ctx) {
   const tenantId = (profile as { tenant_id?: string } | null)?.tenant_id ?? null;
   if (!tenantId) throw new Error("Tenant não encontrado.");
 
-  const { data: staffRow } = await supabaseAdmin
+  const { data: staffRow } = await ctx.supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", ctx.userId)
@@ -98,8 +98,8 @@ export const getDonationsList = createServerFn({ method: "POST" })
     const ctx = context as unknown as Ctx;
     const access = await resolveAccess(ctx);
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    let query = supabaseAdmin
+    
+    let query = ctx.supabase
       .from("payments")
       .select(
         "id, tenant_id, method, card_brand, donation_amount, status, created_at, reference_id",
@@ -141,9 +141,9 @@ export const getDonationsList = createServerFn({ method: "POST" })
     if (donationIds.length > 0) {
       // NOTA: a view donations_staff foi removida na migration
       // 20260612172845 (substituída por GRANT de coluna direto na tabela).
-      // supabaseAdmin usa service_role, que ignora RLS/GRANTs de coluna,
+      // ctx.supabase usa service_role, que ignora RLS/GRANTs de coluna,
       // então consultamos a tabela base diretamente.
-      const { data: dons } = await supabaseAdmin
+      const { data: dons } = await ctx.supabase
         .from("donations")
         .select("id, donor_name, gross_amount, net_amount")
         .in("id", donationIds);
@@ -161,7 +161,7 @@ export const getDonationsList = createServerFn({ method: "POST" })
     if (access.isPlatformAdmin) {
       const tenantIds = [...new Set(payments.map((p) => p.tenant_id))];
       if (tenantIds.length > 0) {
-        const { data: tenants } = await supabaseAdmin
+        const { data: tenants } = await ctx.supabase
           .from("tenants")
           .select("id, name")
           .in("id", tenantIds);
@@ -245,8 +245,8 @@ export const getDonationDetail = createServerFn({ method: "POST" })
     const ctx = context as unknown as Ctx;
     const access = await resolveAccess(ctx);
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    let query = supabaseAdmin
+    
+    let query = ctx.supabase
       .from("payments")
       .select(
         "id, tenant_id, method, card_brand, donation_amount, status, error_message, gateway_id, created_at, gateway_request, reference_id, reference_type",
@@ -281,7 +281,7 @@ export const getDonationDetail = createServerFn({ method: "POST" })
     let adminFeeCents: number | null = null;
     if (r.reference_id) {
       // ver nota em getDonationsList sobre a remoção da view donations_staff
-      const { data: donation } = await supabaseAdmin
+      const { data: donation } = await ctx.supabase
         .from("donations")
         .select("donor_name, donor_email, donor_phone, gross_amount, net_amount, admin_fee")
         .eq("id", r.reference_id)
@@ -315,7 +315,7 @@ export const getDonationDetail = createServerFn({ method: "POST" })
 
     let tenantName: string | null = null;
     if (access.isPlatformAdmin) {
-      const { data: tenant } = await supabaseAdmin
+      const { data: tenant } = await ctx.supabase
         .from("tenants")
         .select("name")
         .eq("id", r.tenant_id)
@@ -388,11 +388,11 @@ export const getDonationsReport = createServerFn({ method: "POST" })
     const ctx = context as unknown as Ctx;
     const access = await resolveAccess(ctx);
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
 
     // Consulta a tabela base diretamente (a view donations_staff foi
     // removida e nunca recriada — ver nota em getDonationsList).
-    let query = supabaseAdmin
+    let query = ctx.supabase
       .from("donations")
       .select(
         "id, tenant_id, donor_name, donor_document, donor_phone, donor_email, payment_method, installments, card_brand, gross_amount, net_amount, admin_fee, created_at",
@@ -432,7 +432,7 @@ export const getDonationsReport = createServerFn({ method: "POST" })
     if (access.isPlatformAdmin) {
       const tenantIds = [...new Set(donations.map((d) => d.tenant_id))];
       if (tenantIds.length > 0) {
-        const { data: tenants } = await supabaseAdmin
+        const { data: tenants } = await ctx.supabase
           .from("tenants")
           .select("id, name")
           .in("id", tenantIds);
@@ -478,8 +478,8 @@ export const getTenantOptions = createServerFn({ method: "POST" })
     const access = await resolveAccess(ctx);
     if (!access.isPlatformAdmin) return { items: [] as TenantOption[], isPlatformAdmin: false };
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    
+    const { data, error } = await ctx.supabase
       .from("tenants")
       .select("id, name")
       .is("deleted_at", null)
