@@ -46,7 +46,7 @@ const PLATFORM_ITEMS = [
   { title: "Eventos", url: "/admin/events", icon: Calendar },
   { title: "Relatórios", url: "/admin/relatorios", icon: ScrollText },
   { title: "Financeiro", url: "/admin/financeiro", icon: Wallet },
-  { title: "Plataforma TicketConnect", url: "/admin/settings", icon: Settings },
+  { title: "Plataforma", url: "/admin/settings", icon: Settings },
 ];
 
 /**
@@ -71,7 +71,7 @@ export function AppSidebar() {
             <>
               <img
                 src="/__l5e/assets-v1/64e1ae41-9cf7-45e3-ac17-3658b088a3df/ticketconnect-logo-long.jpeg"
-                alt="TicketConnect"
+                alt=""
                 className="h-6 w-auto rounded-sm"
               />
               {!collapsed && (
@@ -118,7 +118,7 @@ export function AppSidebar() {
 
         {isPlatformAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>Plataforma TicketConnect</SidebarGroupLabel>
+            <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {PLATFORM_ITEMS.map((i) => (

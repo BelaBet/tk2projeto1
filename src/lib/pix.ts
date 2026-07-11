@@ -41,7 +41,7 @@ export function buildPixPayload(opts: {
   txid?: string;
 }) {
   const key = sanitizeKey(opts.key);
-  const name = normalizeText(opts.merchantName || "TK2 EMPREENDIMENTOS", 25);
+  const name = normalizeText(opts.merchantName || "", 25);
   const city = normalizeText(opts.merchantCity || "SAO PAULO", 15);
   const txid = normalizeText(opts.txid || "***", 25);
 

@@ -40,7 +40,6 @@ function TK2LandingPage() {
             <div className="grid h-9 w-9 place-items-center rounded-lg bg-slate-900 text-sm font-bold text-white">
               TK2
             </div>
-            <span className="text-sm font-semibold tracking-tight">TK2 EMPREENDIMENTOS</span>
           </div>
           <nav className="hidden items-center gap-7 text-sm text-slate-600 md:flex">
             <a href="#recursos" className="hover:text-slate-900">
