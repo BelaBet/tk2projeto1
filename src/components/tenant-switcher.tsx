@@ -30,7 +30,7 @@ export function TenantSwitcher() {
     try {
       await start(id);
       toast.success("Acessando como igreja selecionada");
-      nav({ to: "/manage/dashboard" });
+      nav({ to: "/dashboard" });
     } catch (e) {
       toast.error(translateError(e));
     }

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { useEffectiveTenantId } from "@/lib/impersonation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/_authenticated/manage/mensagens")({
 
 function MessagesPage() {
   const { isStaff, profile } = useAuth();
+  const tenantId = useEffectiveTenantId(profile?.tenant_id);
   const [channel, setChannel] = useState<"in_app" | "sms" | "whatsapp">("in_app");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -29,12 +31,12 @@ function MessagesPage() {
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile?.tenant_id) return;
+    if (!tenantId) return;
     setSending(true);
     try {
       const { error: msgErr } = await supabase.from("messages").insert({
-        tenant_id: profile.tenant_id,
-        sender_id: profile.id,
+        tenant_id: tenantId,
+        sender_id: profile!.id,
         channel,
         target_type: "broadcast",
         target_id: null,
@@ -45,12 +47,12 @@ function MessagesPage() {
       if (msgErr) throw msgErr;
 
       if (channel === "in_app") {
-        const { data } = await supabase.from("profiles").select("id").eq("tenant_id", profile.tenant_id);
+        const { data } = await supabase.from("profiles").select("id").eq("tenant_id", tenantId);
         const recipientIds = (data ?? []).map((p) => p.id);
         if (recipientIds.length > 0) {
           await supabase.from("notifications").insert(
             recipientIds.map((pid) => ({
-              tenant_id: profile.tenant_id,
+              tenant_id: tenantId,
               profile_id: pid,
               title: title || "Nova mensagem",
               body: content.slice(0, 200),

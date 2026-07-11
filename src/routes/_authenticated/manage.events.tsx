@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { useEffectiveTenantId } from "@/lib/impersonation";
 import { uploadEventBanner } from "@/lib/events.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,7 +53,7 @@ const empty: FormData = {
 
 function ManageEventsPage() {
   const { profile } = useAuth();
-  const tenantId = profile?.tenant_id;
+  const tenantId = useEffectiveTenantId(profile?.tenant_id);
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormData>(empty);

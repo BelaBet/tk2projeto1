@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
+import { useEffectiveTenantId } from "@/lib/impersonation";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,17 +17,18 @@ export const Route = createFileRoute("/_authenticated/dashboard/")({
 
 function Dashboard() {
   const { profile, roles } = useAuth();
+  const tenantId = useEffectiveTenantId(profile?.tenant_id);
   const isStaff = roles.includes("manager") || roles.includes("admin");
   const qrRef = useRef<HTMLDivElement>(null);
 
   const { data: myTenant } = useQuery({
-    queryKey: ["my-tenant", profile?.tenant_id],
-    enabled: !!profile?.tenant_id,
+    queryKey: ["my-tenant", tenantId],
+    enabled: !!tenantId,
     queryFn: async () => {
       const { data } = await supabase
         .from("tenants")
         .select("name, logo_url, slug, primary_color, secondary_color")
-        .eq("id", profile!.tenant_id)
+        .eq("id", tenantId!)
         .maybeSingle();
       return data;
     },
@@ -46,7 +48,7 @@ function Dashboard() {
         {isStaff ? "Visão geral da sua igreja." : "Acompanhe sua jornada na igreja."}
       </p>
 
-      <DonationsSummary />
+      <DonationsSummary tenantId={tenantId} />
 
       {isStaff && (
         <div className="mt-6 flex flex-wrap gap-3">

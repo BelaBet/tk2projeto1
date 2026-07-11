@@ -73,3 +73,16 @@ export function ImpersonationProvider({ children }: { children: ReactNode }) {
 }
 
 export const useImpersonation = () => useContext(Ctx);
+
+/**
+ * Tenant "efetivo" para fins de exibição/edição de dados: quando um super
+ * admin está impersonando uma igreja, deve ser o tenant impersonado — não
+ * o tenant_id do próprio perfil do super admin (que normalmente é null,
+ * ou pode ser de uma instituição diferente da que ele está tentando ver).
+ * Usar em TODA tela do lado da igreja (/dashboard, /manage/*) no lugar de
+ * profile?.tenant_id direto, para que a impersonação realmente funcione.
+ */
+export function useEffectiveTenantId(profileTenantId: string | null | undefined): string | null {
+  const { active, tenantId } = useImpersonation();
+  return (active && tenantId ? tenantId : profileTenantId) ?? null;
+}

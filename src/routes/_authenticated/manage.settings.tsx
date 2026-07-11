@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { useEffectiveTenantId } from "@/lib/impersonation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,27 +32,28 @@ type TenantRow = {
 
 function SettingsPage() {
   const { profile, refresh, isSuperAdmin } = useAuth();
+  const tenantId = useEffectiveTenantId(profile?.tenant_id);
   const [row, setRow] = useState<TenantRow | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!profile?.tenant_id) return;
+    if (!tenantId) return;
     (async () => {
       const [{ data: t }, { data: pay }] = await Promise.all([
         supabase
           .from("tenants")
           .select("id, name, slug, tagline, logo_url, cover_photo_url, primary_color, accent_color")
-          .eq("id", profile.tenant_id)
+          .eq("id", tenantId)
           .maybeSingle(),
         supabase
           .from("tenant_payment_settings")
           .select("pix_key")
-          .eq("tenant_id", profile.tenant_id)
+          .eq("tenant_id", tenantId)
           .maybeSingle(),
       ]);
       if (t) setRow({ ...t, pix_key: pay?.pix_key ?? null } as TenantRow);
     })();
-  }, [profile?.tenant_id]);
+  }, [tenantId]);
 
   if (!row) {
     return (

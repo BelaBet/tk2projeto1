@@ -57,18 +57,26 @@ function getDateRange(periodo: Periodo, dataInicio: string, dataFim: string) {
   }
 }
 
-function useDashboardMetrics(periodo: Periodo, dataInicio: string, dataFim: string) {
+function useDashboardMetrics(periodo: Periodo, dataInicio: string, dataFim: string, tenantId: string | null) {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
+    // Sem tenant resolvido ainda (ex: perfil carregando) — não busca nada,
+    // e principalmente NÃO cai para "todas as doações" como fallback.
+    if (!tenantId) {
+      setRows([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const range = getDateRange(periodo, dataInicio, dataFim);
     (async () => {
       const { data, error } = await supabase
         .from("donations")
         .select("amount, created_at, payments(status)")
+        .eq("tenant_id", tenantId)
         .is("deleted_at", null)
         .gte("created_at", range.inicio.toISOString())
         .lte("created_at", range.fim.toISOString());
@@ -95,7 +103,7 @@ function useDashboardMetrics(periodo: Periodo, dataInicio: string, dataFim: stri
     return () => {
       alive = false;
     };
-  }, [periodo, dataInicio, dataFim]);
+  }, [periodo, dataInicio, dataFim, tenantId]);
 
   return { rows, loading, range: getDateRange(periodo, dataInicio, dataFim) };
 }
@@ -165,14 +173,14 @@ function bucketKey(bucket: Bucket, d: Date) {
   return format(startOfMonth(d), "yyyy-MM");
 }
 
-export function DonationsSummary() {
+export function DonationsSummary({ tenantId }: { tenantId: string | null }) {
   const [periodo, setPeriodo] = useState<Periodo>("7d");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [appliedInicio, setAppliedInicio] = useState("");
   const [appliedFim, setAppliedFim] = useState("");
 
-  const { rows, loading, range } = useDashboardMetrics(periodo, appliedInicio, appliedFim);
+  const { rows, loading, range } = useDashboardMetrics(periodo, appliedInicio, appliedFim, tenantId);
 
   const aplicarCustom = () => {
     if (!dataInicio || !dataFim) {

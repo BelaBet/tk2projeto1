@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
+import { useEffectiveTenantId } from "@/lib/impersonation";
 import { Card } from "@/components/ui/card";
 import { KpiCard } from "@/components/kpi-card";
 import { Users, UserCheck, DollarSign, Calendar, Ticket } from "lucide-react";
@@ -18,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/manage/dashboard")({
 type Kpis = { total: number; active: number; pending: number; donationsMonth: number; eventsMonth: number; ticketsMonth: number };
 
 function ManagerDashboard() {
+  const { profile } = useAuth();
+  const tenantId = useEffectiveTenantId(profile?.tenant_id);
   const [kpis, setKpis] = useState<Kpis>({ total: 0, active: 0, pending: 0, donationsMonth: 0, eventsMonth: 0, ticketsMonth: 0 });
   const [donationSeries, setDonationSeries] = useState<{ month: string; total: number }[]>([]);
   const [attendance, setAttendance] = useState<{ event: string; count: number }[]>([]);
@@ -25,17 +29,24 @@ function ManagerDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Sem tenant resolvido ainda — não busca (e principalmente não cai para
+    // "todos os tenants" como fallback, que era o bug original desta tela).
+    if (!tenantId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     (async () => {
       const startMonth = startOfMonth(new Date()).toISOString();
       const endMonthIso = endOfMonth(new Date()).toISOString();
 
       const [profilesRes, donationsAllRes, donationsMonthRes, eventsMonthRes, ticketsMonthRes, eventsAttRes] = await Promise.all([
-        supabase.from("profiles").select("id, status, created_at"),
-        supabase.from("donations").select("amount, created_at"),
-        supabase.from("donations").select("amount").gte("created_at", startMonth).lte("created_at", endMonthIso),
-        supabase.from("events").select("id").gte("date", startMonth).lte("date", endMonthIso),
-        supabase.from("tickets").select("id").gte("created_at", startMonth).lte("created_at", endMonthIso),
-        supabase.from("events").select("id, title, tickets(count)").order("date", { ascending: false }).limit(8),
+        supabase.from("profiles").select("id, status, created_at").eq("tenant_id", tenantId),
+        supabase.from("donations").select("amount, created_at").eq("tenant_id", tenantId),
+        supabase.from("donations").select("amount").eq("tenant_id", tenantId).gte("created_at", startMonth).lte("created_at", endMonthIso),
+        supabase.from("events").select("id").eq("tenant_id", tenantId).gte("date", startMonth).lte("date", endMonthIso),
+        supabase.from("tickets").select("id").eq("tenant_id", tenantId).gte("created_at", startMonth).lte("created_at", endMonthIso),
+        supabase.from("events").select("id, title, tickets(count)").eq("tenant_id", tenantId).order("date", { ascending: false }).limit(8),
       ]);
 
       const profiles = profilesRes.data ?? [];
@@ -70,7 +81,7 @@ function ManagerDashboard() {
       
       setLoading(false);
     })();
-  }, []);
+  }, [tenantId]);
 
   const fmtBRL = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -82,8 +93,8 @@ function ManagerDashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <KpiCard icon={Users} label="Instituições totais" value={kpis.total} loading={loading} />
-        <KpiCard icon={UserCheck} label="Instituições ativas" value={kpis.active} loading={loading} hint={`${kpis.pending} pendentes`} />
+        <KpiCard icon={Users} label="Membros totais" value={kpis.total} loading={loading} />
+        <KpiCard icon={UserCheck} label="Membros aprovados" value={kpis.active} loading={loading} hint={`${kpis.pending} pendentes`} />
         <KpiCard icon={DollarSign} label="Doações no mês" value={fmtBRL(kpis.donationsMonth)} loading={loading} />
         <KpiCard icon={Calendar} label="Eventos no mês" value={kpis.eventsMonth} loading={loading} />
         <KpiCard icon={Ticket} label="Ingressos no mês" value={kpis.ticketsMonth} loading={loading} />

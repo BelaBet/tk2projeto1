@@ -10,6 +10,7 @@ import { Info } from "lucide-react";
 import { toast } from "sonner";
 import { translateError } from "@/lib/translate-error";
 import { useAuth } from "@/lib/auth-context";
+import { useEffectiveTenantId } from "@/lib/impersonation";
 import { supabase } from "@/integrations/supabase/client";
 import { DynamicQrButton } from "@/components/dynamic-qr-button";
 import {
@@ -22,23 +23,25 @@ export function CostCentersAdminPanel() {
   const list = useServerFn(listCostCenters);
   const toggleFn = useServerFn(toggleCostCenterActive);
   const { profile } = useAuth();
+  const tenantId = useEffectiveTenantId(profile?.tenant_id);
 
   const { data: tenant } = useQuery({
-    queryKey: ["my-tenant-slug", profile?.tenant_id],
-    enabled: !!profile?.tenant_id,
+    queryKey: ["my-tenant-slug", tenantId],
+    enabled: !!tenantId,
     queryFn: async () => {
       const { data } = await supabase
         .from("tenants")
         .select("slug, primary_color")
-        .eq("id", profile!.tenant_id)
+        .eq("id", tenantId!)
         .maybeSingle();
       return data;
     },
   });
 
   const { data: rows, isLoading } = useQuery({
-    queryKey: ["cost-centers", "my-tenant"],
-    queryFn: () => list({ data: {} }),
+    queryKey: ["cost-centers", tenantId],
+    enabled: !!tenantId,
+    queryFn: () => list({ data: { tenantId: tenantId! } }),
   });
 
   const toggleMut = useMutation({
