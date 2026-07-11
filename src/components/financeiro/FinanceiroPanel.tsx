@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import {
@@ -44,7 +45,7 @@ export function FinanceiroPanel({
 }) {
   const qc = useQueryClient();
   const [openModal, setOpenModal] = useState(false);
-  const [period] = useState(last7DaysRange);
+  const [period, setPeriod] = useState(last7DaysRange);
 
   const balanceFn = useServerFn(getRecipientBalance);
   const transfersFn = useServerFn(getRecipientTransfers);
@@ -125,10 +126,23 @@ export function FinanceiroPanel({
 
         {scope === "tenant" && (
           <TabsContent value="extrato" className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              {period.periodStart.split("-").reverse().join("/")} até{" "}
-              {period.periodEnd.split("-").reverse().join("/")}
-            </p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Input
+                type="date"
+                value={period.periodStart}
+                onChange={(e) => setPeriod((p) => ({ ...p, periodStart: e.target.value }))}
+                className="w-40"
+                aria-label="De"
+              />
+              <span className="text-xs text-muted-foreground">até</span>
+              <Input
+                type="date"
+                value={period.periodEnd}
+                onChange={(e) => setPeriod((p) => ({ ...p, periodEnd: e.target.value }))}
+                className="w-40"
+                aria-label="Até"
+              />
+            </div>
             {summary.error ? (
               <ErrorBlock
                 message={summary.error instanceof Error ? summary.error.message : "Erro"}

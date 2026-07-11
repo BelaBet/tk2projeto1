@@ -34,7 +34,7 @@ function last7DaysRange() {
 }
 
 export function DonationsTable({ showTenantFilter = true }: { showTenantFilter?: boolean } = {}) {
-  const [period] = useState(last7DaysRange);
+  const [period, setPeriod] = useState(last7DaysRange);
   const [tenantFilter, setTenantFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export function DonationsTable({ showTenantFilter = true }: { showTenantFilter?:
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-end gap-2">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -86,6 +86,23 @@ export function DonationsTable({ showTenantFilter = true }: { showTenantFilter?:
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-56 pl-8"
+          />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Input
+            type="date"
+            value={period.periodStart}
+            onChange={(e) => setPeriod((p) => ({ ...p, periodStart: e.target.value }))}
+            className="w-40"
+            aria-label="De"
+          />
+          <span className="text-xs text-muted-foreground">até</span>
+          <Input
+            type="date"
+            value={period.periodEnd}
+            onChange={(e) => setPeriod((p) => ({ ...p, periodEnd: e.target.value }))}
+            className="w-40"
+            aria-label="Até"
           />
         </div>
         {isPlatformView && (
