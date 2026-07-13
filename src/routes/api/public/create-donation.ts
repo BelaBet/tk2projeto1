@@ -57,14 +57,33 @@ function computeFees(rule: FeeRule, amountCents: number) {
       Number(rule.tk2_op_percent ?? 0) +
       Number(rule.acquirer_fee_percent ?? 0)) /
     100;
-  const variable = Math.round(amountCents * pct);
   const fixed =
     Math.round(Number(rule.tk2_op_fixed ?? 0) * 100) +
     Math.round(Number(rule.transaction_fixed ?? 0) * 100);
-  const adminFee = variable + fixed;
   const donorPays = rule.who_pays === 'donor';
-  const grossAmount = donorPays ? amountCents + adminFee : amountCents;
-  const netAmount = donorPays ? amountCents : amountCents - adminFee;
+
+  if (donorPays) {
+    // GROSS-UP: quando o doador absorve a taxa, o percentual incide sobre o
+    // valor TOTAL cobrado (gross) — que já inclui a própria taxa — e não
+    // sobre a doação base. É isso que a adquirente/Pagar.me de fato cobra
+    // em cima da transação. Como gross = amountCents + (pct*gross + fixed),
+    // resolvendo: gross = (amountCents + fixed) / (1 - pct).
+    // Calcular "pct * amountCents" (a doação base) em vez de "pct * gross"
+    // subestima a taxa sempre que pct > 0 — era exatamente esse o bug.
+    const grossRaw = (amountCents + fixed) / (1 - pct);
+    const grossAmount = Math.round(grossRaw);
+    const adminFee = grossAmount - amountCents;
+    const netAmount = amountCents;
+    return { adminFee, grossAmount, netAmount };
+  }
+
+  // Instituição absorve a taxa: amountCents já É o valor total cobrado do
+  // doador (não precisa de gross-up), a taxa percentual incide sobre ele
+  // normalmente e é descontada do repasse para a igreja.
+  const variable = Math.round(amountCents * pct);
+  const adminFee = variable + fixed;
+  const grossAmount = amountCents;
+  const netAmount = amountCents - adminFee;
   return { adminFee, grossAmount, netAmount };
 }
 

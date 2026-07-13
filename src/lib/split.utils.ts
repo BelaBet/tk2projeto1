@@ -39,14 +39,19 @@ export function calculatePixAmounts(ofertaEmCentavos: number, splitOverridePerce
   const f = FEES.pix;
   const donationAmount = ofertaEmCentavos;
   const admPercent = splitOverridePercent ?? f.adm_percent;
-
-  const tickettoFee = Math.round(donationAmount * admPercent);
   const pagarmeFee = f.adquirencia_fixa;
   const tk2OpFee = f.tk2_operacional_fixo;
   const transacaoFee = f.transacao_fixa;
 
+  // GROSS-UP: o percentual da taxa ADM incide sobre o valor TOTAL cobrado
+  // do doador (que já inclui a própria taxa), não sobre a doação base —
+  // é isso que efetivamente sai do bolso do doador. Calcular
+  // "donationAmount * admPercent" direto subestima a taxa sempre que
+  // admPercent > 0. Resolvendo totalAmount = (donationAmount + fixos) / (1 - admPercent).
+  const fixedTotal = pagarmeFee + tk2OpFee;
+  const totalAmount = Math.round((donationAmount + fixedTotal) / (1 - admPercent));
+  const tickettoFee = totalAmount - donationAmount - fixedTotal;
   const splitPlatformAmount = tickettoFee + pagarmeFee + tk2OpFee;
-  const totalAmount = donationAmount + splitPlatformAmount;
 
   return {
     donationAmount,
@@ -70,18 +75,25 @@ export function calculateCardAmounts(
   const f = brand === "master_visa" ? FEES.cartao_master_visa : FEES.cartao_ello_hiper_amex;
   const donationAmount = ofertaEmCentavos;
   const admPercent = splitOverridePercent ?? f.adm_percent;
-
-  const tickettoFee = Math.round(donationAmount * admPercent);
-  const tk2OpFee = Math.round(donationAmount * f.tk2_op_percent * admPercent);
-
   const adquirenciaPercent = installments <= 1 ? f.adquirencia_avista_percent : f.adquirencia_2x_percent;
-  const adquirenciaValor = Math.round(donationAmount * adquirenciaPercent);
+  const tk2OpPercent = f.tk2_op_percent * admPercent;
 
   const pagarmeFee = 0;
   const transacaoFee = f.transacao_fixa;
 
-  const splitPlatformAmount = tickettoFee + tk2OpFee + adquirenciaValor;
-  const totalAmount = donationAmount + splitPlatformAmount;
+  // GROSS-UP: os três percentuais (adm, tk2_op, adquirência) incidem sobre
+  // o valor total cobrado do doador, não sobre a doação base — mesmo
+  // problema do PIX/boleto. totalPct é a soma de tudo; resolvendo
+  // totalAmount = donationAmount / (1 - totalPct), depois distribuindo
+  // proporcionalmente entre os três componentes (o resto vai para
+  // adquirenciaValor, para não perder centavo de arredondamento).
+  const totalPct = admPercent + tk2OpPercent + adquirenciaPercent;
+  const totalAmount = Math.round(donationAmount / (1 - totalPct));
+  const splitPlatformAmount = totalAmount - donationAmount;
+
+  const tickettoFee = Math.round((splitPlatformAmount * admPercent) / totalPct);
+  const tk2OpFee = Math.round((splitPlatformAmount * tk2OpPercent) / totalPct);
+  const adquirenciaValor = splitPlatformAmount - tickettoFee - tk2OpFee;
 
   return {
     donationAmount,
@@ -100,14 +112,15 @@ export function calculateBoletoAmounts(ofertaEmCentavos: number, splitOverridePe
   const f = FEES.boleto;
   const donationAmount = ofertaEmCentavos;
   const admPercent = splitOverridePercent ?? f.adm_percent;
-
-  const tickettoFee = Math.round(donationAmount * admPercent);
   const pagarmeFee = f.adquirencia_fixa;
   const tk2OpFee = f.tk2_operacional_fixo;
   const transacaoFee = f.transacao_fixa;
 
+  // GROSS-UP: mesmo ajuste do PIX — ver comentário em calculatePixAmounts.
+  const fixedTotal = pagarmeFee + tk2OpFee;
+  const totalAmount = Math.round((donationAmount + fixedTotal) / (1 - admPercent));
+  const tickettoFee = totalAmount - donationAmount - fixedTotal;
   const splitPlatformAmount = tickettoFee + tk2OpFee + pagarmeFee;
-  const totalAmount = donationAmount + splitPlatformAmount;
 
   return {
     donationAmount,
