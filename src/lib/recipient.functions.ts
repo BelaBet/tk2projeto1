@@ -56,6 +56,7 @@ async function resolveRecipientId(
       .from("platform_roles")
       .select("role")
       .eq("user_id", ctx.userId)
+      .eq("role", "super_admin")
       .limit(1)
       .maybeSingle();
     if (!pr) throw new Error("Acesso restrito à plataforma");
@@ -73,6 +74,7 @@ async function resolveRecipientId(
       .from("platform_roles")
       .select("role")
       .eq("user_id", ctx.userId)
+      .eq("role", "super_admin")
       .limit(1)
       .maybeSingle();
     if (!pr) throw new Error("Acesso restrito à plataforma");
@@ -404,6 +406,7 @@ export const getPlatformFeeRevenue = createServerFn({ method: "POST" })
       .from("platform_roles")
       .select("role")
       .eq("user_id", (context as { userId: string }).userId)
+      .eq("role", "super_admin")
       .limit(1)
       .maybeSingle();
     if (!pr) throw new Error("Acesso restrito à plataforma");
@@ -517,6 +520,7 @@ export const getWithdrawalsReport = createServerFn({ method: "POST" })
       .from("platform_roles")
       .select("role")
       .eq("user_id", ctx.userId)
+      .eq("role", "super_admin")
       .limit(1)
       .maybeSingle();
     const isPlatformAdmin = !!pr;

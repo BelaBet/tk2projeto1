@@ -30,12 +30,17 @@ type Ctx = {
 };
 
 async function resolveAccess(ctx: Ctx) {
-  
-
+  // Existem 4 papéis de plataforma (super_admin, support, finance, operator),
+  // mas só super_admin deve enxergar dados de todas as instituições — igual
+  // já é reforçado no banco (is_platform_admin() SQL exige role='super_admin'
+  // especificamente). Checar só "existe alguma linha em platform_roles" (sem
+  // filtrar o role) tratava support/finance/operator como super admin
+  // também, o que não deveria acontecer.
   const { data: roleRow } = await ctx.supabase
     .from("platform_roles")
     .select("user_id")
     .eq("user_id", ctx.userId)
+    .eq("role", "super_admin")
     .limit(1)
     .maybeSingle();
   if (roleRow) return { isPlatformAdmin: true as const, tenantId: null as string | null };

@@ -24,7 +24,8 @@ async function assertPlatformAdmin(userId: string) {
   const { data: roles } = await supabaseAdmin
     .from("platform_roles")
     .select("role")
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .eq("role", "super_admin");
   if (!roles?.length) {
     throw new Error("Acesso restrito a administradores da plataforma.");
   }

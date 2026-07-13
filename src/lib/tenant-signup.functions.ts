@@ -15,6 +15,7 @@ async function assertPlatformAdmin(userId: string) {
     .from("platform_roles")
     .select("user_id")
     .eq("user_id", userId)
+    .eq("role", "super_admin")
     .limit(1)
     .maybeSingle();
   if (!data) throw new Error("Apenas super administradores podem editar instituições.");
