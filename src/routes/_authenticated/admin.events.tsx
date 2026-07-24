@@ -43,6 +43,7 @@ import { toast } from "sonner";
 import { translateError } from "@/lib/translate-error";
 import { externalEventUrlSchema, TICKETTO_BASE } from "@/lib/validators/url";
 import { z } from "zod";
+import { useImpersonation } from "@/lib/impersonation";
 
 export const Route = createFileRoute("/_authenticated/admin/events")({
   component: AdminEventsPage,
@@ -86,6 +87,7 @@ const empty: FormData = {
 
 function AdminEventsPage() {
   const qc = useQueryClient();
+  const { active, tenantId: impersonatedTenantId } = useImpersonation();
   const fetchEvents = useServerFn(getAllEvents);
   const fetchTenants = useServerFn(listTenantsForAdmin);
   const createEventFn = useServerFn(createEventAsAdmin);
@@ -96,8 +98,8 @@ function AdminEventsPage() {
   const [uploading, setUploading] = useState(false);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["admin-events"],
-    queryFn: () => fetchEvents(),
+    queryKey: ["admin-events", active ? impersonatedTenantId : null],
+    queryFn: () => fetchEvents({ data: active && impersonatedTenantId ? { tenantId: impersonatedTenantId } : {} }),
   });
   const { data: tenants } = useQuery({
     queryKey: ["admin-tenants-list"],
@@ -189,10 +191,20 @@ function AdminEventsPage() {
         <div>
           <h1 className="font-display text-3xl">Eventos</h1>
           <p className="text-sm text-muted-foreground">
-            Todos os eventos cadastrados pelas igrejas da plataforma.
+            {active
+              ? "Eventos desta instituição (impersonando)."
+              : "Todos os eventos cadastrados pelas igrejas da plataforma."}
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o);
+            if (o && active && impersonatedTenantId) {
+              setForm((f) => ({ ...f, tenant_id: impersonatedTenantId }));
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" /> Novo evento
@@ -307,7 +319,7 @@ function AdminEventsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Evento</TableHead>
-              <TableHead>Igreja</TableHead>
+              {!active && <TableHead>Igreja</TableHead>}
               <TableHead>Data</TableHead>
               <TableHead>Local</TableHead>
               <TableHead>Status</TableHead>
@@ -315,9 +327,9 @@ function AdminEventsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading && <LoadingRow colSpan={6} />}
+            {isLoading && <LoadingRow colSpan={active ? 5 : 6} />}
             {!isLoading && events.length === 0 && (
-              <EmptyRow colSpan={6} message="Nenhum evento cadastrado." />
+              <EmptyRow colSpan={active ? 5 : 6} message="Nenhum evento cadastrado." />
             )}
             {events.map((ev) => (
               <TableRow key={ev.id}>
@@ -333,9 +345,11 @@ function AdminEventsPage() {
                     <span>{ev.title}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {ev.tenants?.name ?? "—"}
-                </TableCell>
+                {!active && (
+                  <TableCell className="text-sm text-muted-foreground">
+                    {ev.tenants?.name ?? "—"}
+                  </TableCell>
+                )}
                 <TableCell className="text-sm whitespace-nowrap">
                   {ev.date ? new Date(ev.date).toLocaleString("pt-BR") : "—"}
                 </TableCell>

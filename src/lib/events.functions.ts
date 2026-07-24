@@ -71,17 +71,21 @@ export const uploadEventBanner = createServerFn({ method: "POST" })
 /** Lista todos os eventos de todas as igrejas (apenas plataforma). */
 export const getAllEvents = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) => z.object({ tenantId: z.string().uuid().optional() }).parse(d ?? {}))
+  .handler(async ({ data, context }) => {
     await assertPlatformAdmin(context.userId);
 
-    const { data, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("events")
       .select(
         "id,title,date,location,description,banner_url,external_url,status,created_at,tenant_id,tenants(name,slug)"
       )
       .order("date", { ascending: false, nullsFirst: false });
+    if (data.tenantId) query = query.eq("tenant_id", data.tenantId);
+
+    const { data: rows, error } = await query;
     if (error) throw error;
-    return data ?? [];
+    return rows ?? [];
   });
 
 /** Lista igrejas ativas (para seleção pelo super admin). */
