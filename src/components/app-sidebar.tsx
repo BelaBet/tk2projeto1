@@ -26,7 +26,9 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { useTenant } from "@/lib/tenant-context";
+import { useEffectiveTenantId } from "@/lib/impersonation";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { initials } from "@/lib/utils";
 
 const MANAGE_ITEMS = [
@@ -60,8 +62,28 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const { tenant } = useTenant();
-  const { isStaff, isSuperAdmin } = useAuth();
+  const { isStaff, isSuperAdmin, profile } = useAuth();
+  const tenantId = useEffectiveTenantId(profile?.tenant_id);
+
+  // NOTA: useTenant() (tenant-context.tsx) resolve pelo domínio/URL da
+  // página atual — pensado pra página pública (church-page.tsx), não pro
+  // painel logado. Quem acessa o painel pelo domínio compartilhado (não
+  // pelo subdomínio próprio da igreja) caía no fallback "default" desse
+  // resolvedor, que aponta pro tenant interno da TK2 — mostrando o nome
+  // dela no menu de qualquer igreja. Aqui usamos o tenant de quem está
+  // logado (considerando impersonação), nunca a URL.
+  const { data: tenant } = useQuery({
+    queryKey: ["sidebar-tenant-name", tenantId],
+    enabled: !!tenantId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tenants")
+        .select("name")
+        .eq("id", tenantId!)
+        .maybeSingle();
+      return data;
+    },
+  });
 
   return (
     <Sidebar collapsible="icon">
