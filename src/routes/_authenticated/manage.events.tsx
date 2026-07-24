@@ -141,7 +141,7 @@ function ManageEventsPage() {
   return (
     <div>
       <BackButton />
-      <div className="mt-3 flex items-start justify-between gap-4">
+      <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl md:text-4xl">Eventos</h1>
           <p className="mt-1 text-muted-foreground">
@@ -169,7 +169,7 @@ function ManageEventsPage() {
                   maxLength={140}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="date">Data e hora</Label>
                   <Input

@@ -97,7 +97,7 @@ function Dashboard() {
                 />
               </div>
 
-              <p className="text-xs text-muted-foreground">{qrUrl}</p>
+              <p className="max-w-[220px] break-all text-center text-xs text-muted-foreground">{qrUrl}</p>
 
               <button
                 type="button"

@@ -108,7 +108,7 @@ export function FinanceiroPanel({
           {balance.error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="flex items-center justify-between gap-2">
+              <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
                 <span>
                   {balance.error instanceof Error
                     ? balance.error.message
@@ -190,7 +190,7 @@ export function FinanceiroPanel({
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="p-5 flex items-center justify-between">
+              <CardContent className="p-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">
                     Disponível para antecipação
@@ -234,7 +234,7 @@ function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void
   return (
     <Alert variant="destructive">
       <AlertCircle className="h-4 w-4" />
-      <AlertDescription className="flex items-center justify-between gap-2">
+      <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
         <span>{message}</span>
         <Button size="sm" variant="outline" onClick={onRetry}>
           Tentar novamente

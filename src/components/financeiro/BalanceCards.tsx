@@ -16,12 +16,12 @@ export function BalanceCards({ balance, loading, onTransfer }: Props) {
 
   return (
     <Card>
-      <CardContent className="p-6 flex flex-wrap items-center justify-between gap-6">
+      <CardContent className="p-6 flex flex-wrap items-start justify-between gap-6 sm:items-center">
         <div>
           <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
             <Wallet className="h-4 w-4" /> Saldo disponível
           </div>
-          <div className="mt-1 font-display text-4xl leading-none">
+          <div className="mt-1 font-display text-3xl leading-none sm:text-4xl">
             {loading ? <Skeleton className="h-10 w-44" /> : brl(balance?.available?.amount)}
           </div>
           {!loading && waiting > 0 && (
@@ -36,9 +36,9 @@ export function BalanceCards({ balance, loading, onTransfer }: Props) {
           )}
         </div>
 
-        <div className="flex gap-8 text-right">
+        <div className="flex flex-wrap gap-4 text-left sm:gap-8 sm:text-right">
           <div>
-            <div className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center justify-start gap-1.5 text-xs uppercase tracking-wider text-muted-foreground sm:justify-end">
               <Clock className="h-3.5 w-3.5" /> A receber
             </div>
             <div className="mt-1 font-display text-xl">
@@ -46,7 +46,7 @@ export function BalanceCards({ balance, loading, onTransfer }: Props) {
             </div>
           </div>
           <div>
-            <div className="flex items-center justify-end gap-1.5 text-xs uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center justify-start gap-1.5 text-xs uppercase tracking-wider text-muted-foreground sm:justify-end">
               <CheckCircle2 className="h-3.5 w-3.5" /> Transferido
             </div>
             <div className="mt-1 font-display text-xl">

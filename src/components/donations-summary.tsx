@@ -297,8 +297,8 @@ export function DonationsSummary({ tenantId }: { tenantId: string | null }) {
 
   return (
     <section
-      className="mx-auto mt-10 w-full"
-      style={{ maxWidth: 1200, padding: 24 }}
+      className="mx-auto mt-10 w-full px-4 py-4 sm:px-6 sm:py-5 md:px-6"
+      style={{ maxWidth: 1200 }}
       aria-label="Resumo de doações do período"
     >
       <h2 className="mb-4 text-sm font-medium text-muted-foreground">
@@ -387,7 +387,7 @@ export function DonationsSummary({ tenantId }: { tenantId: string | null }) {
           padding: "20px 24px",
         }}
       >
-        <div className="flex flex-wrap items-center justify-between gap-6">
+        <div className="flex flex-wrap items-start justify-between gap-6 sm:items-center">
           <div>
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
               Recebido no período
@@ -395,7 +395,7 @@ export function DonationsSummary({ tenantId }: { tenantId: string | null }) {
             {loading ? (
               <Skeleton className="mt-2 h-10 w-44" />
             ) : (
-              <p className="font-display mt-1 text-4xl leading-none">
+              <p className="font-display mt-1 text-3xl leading-none sm:text-4xl">
                 {fmtBRL(metrics.authorized)}
               </p>
             )}
@@ -406,7 +406,7 @@ export function DonationsSummary({ tenantId }: { tenantId: string | null }) {
             )}
           </div>
 
-          <div className="flex gap-8 text-right">
+          <div className="flex flex-wrap gap-4 text-left sm:gap-8 sm:text-right">
             {secondaryStats.map((s) => (
               <div key={s.label}>
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">{s.label}</p>
