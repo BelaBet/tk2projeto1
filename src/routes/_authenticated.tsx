@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { useTenant } from "@/lib/tenant-context";
+import { useEffectiveTenantId } from "@/lib/impersonation";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, User, LogOut, Bell, Megaphone, ExternalLink, ArrowLeft, Menu, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,19 +24,22 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthLayout() {
   const { user, loading, signOut, profile, isStaff, isAdmin, isSuperAdmin } = useAuth();
   const { tenant: urlTenant } = useTenant();
+  const tenantId = useEffectiveTenantId(profile?.tenant_id);
   const router = useRouter();
   const location = useLocation();
 
-  // Always load the *user's own* tenant (profile.tenant_id) so the header
-  // reflects the institution registered at signup, not the URL-resolved default.
+  // Always load the *effective* tenant (o próprio, ou o impersonado quando
+  // ativo) para que o cabeçalho — inclusive o link "Página de Doação" —
+  // reflita a instituição certa, nunca a resolvida por URL nem a do próprio
+  // super admin enquanto ele estiver impersonando outra igreja.
   const { data: myTenant } = useQuery({
-    queryKey: ["my-tenant-header", profile?.tenant_id],
-    enabled: !!profile?.tenant_id,
+    queryKey: ["my-tenant-header", tenantId],
+    enabled: !!tenantId,
     queryFn: async () => {
       const { data } = await supabase
         .from("tenants")
         .select("id,name,logo_url,tagline,slug")
-        .eq("id", profile!.tenant_id)
+        .eq("id", tenantId!)
         .maybeSingle();
       return data;
     },
