@@ -263,8 +263,8 @@ function ManageEventsPage() {
                 <img src={ev.banner_url} alt={ev.title} className="h-40 w-full object-cover" />
               )}
               <div className="p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-display text-lg">{ev.title}</h3>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-display text-lg break-words">{ev.title}</h3>
                   <Badge variant={ev.status === "active" ? "default" : "secondary"}>
                     {ev.status}
                   </Badge>

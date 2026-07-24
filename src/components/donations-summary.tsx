@@ -430,14 +430,14 @@ export function DonationsSummary({ tenantId }: { tenantId: string | null }) {
           padding: 20,
         }}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="font-medium">Volume total de doações</div>
             <div className="text-xs text-muted-foreground">
               {PERIOD_LABEL[periodo]} — valores em R$
             </div>
           </div>
-          <div className="flex gap-3 text-xs">
+          <div className="flex flex-wrap gap-3 text-xs">
             {[
               { c: "#1D9E75", l: "Autorizado" },
               { c: "#888780", l: "Criado" },
