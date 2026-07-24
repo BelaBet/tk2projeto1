@@ -198,20 +198,11 @@ export async function fetchSellerRecipientId(tenantId: string): Promise<string> 
   return recipientId;
 }
 
-/** Garante que o tenant está habilitado para receber pagamentos. */
-export async function assertTenantFinancialActive(tenantId: string): Promise<void> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
-    .from("tenants")
-    .select("financial_active, compliance_status")
-    .eq("id", tenantId)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  const row = data as { financial_active?: boolean | null; compliance_status?: string | null } | null;
-  if (!row?.financial_active) {
-    throw new Error("Igreja não habilitada para receber pagamentos");
-  }
-}
+// NOTA: a checagem de tenant habilitado pra receber pagamentos vive em
+// @/lib/compliance (assertFinancialActive) — é a versão realmente usada
+// pelos handlers de Pix/Cartão/Boleto. Havia uma segunda função quase
+// idêntica aqui (assertTenantFinancialActive) que nunca era chamada em
+// lugar nenhum; removida para não confundir qual é a "de verdade".
 
 export type CostCenterConfig = {
   id: string;

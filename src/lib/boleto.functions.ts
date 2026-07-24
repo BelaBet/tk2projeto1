@@ -1,11 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { buildSplitPayload, calculateBoletoAmounts, fetchSellerRecipientId } from "./split.utils";
+import { buildSplitPayload, calculateBoletoAmounts, fetchSellerRecipientId, fetchCostCenter } from "./split.utils";
 import { buildPagarmeCustomer, resolveCustomer, validateDocument } from "./payments-customer";
 
 const InputSchema = z.object({
   tenantId: z.string().uuid(),
   donationAmount: z.number().int().positive().max(100_000_000),
+  costCenterId: z.string().uuid().optional().nullable(),
   customerName: z.string().min(1).max(120).optional(),
   customerEmail: z.string().email().optional(),
   customerDocument: z.string().min(8).max(20).optional(),
@@ -40,9 +41,11 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
     if (!secretKey) throw new Error("PAGARME_SECRET_KEY não configurada");
 
     const sellerRecipientId = await fetchSellerRecipientId(data.tenantId);
-    const amounts = calculateBoletoAmounts(data.donationAmount);
+    const costCenter = data.costCenterId ? await fetchCostCenter(data.costCenterId, data.tenantId) : null;
+    const splitOverride = costCenter?.split_platform_percent ?? null;
+    const amounts = calculateBoletoAmounts(data.donationAmount, splitOverride);
     if (process.env.NODE_ENV !== "production") {
-      console.log("[boleto] amounts", amounts, { sellerRecipientId });
+      console.log("[boleto] amounts", amounts, { sellerRecipientId, costCenterId: data.costCenterId, splitOverride });
     }
     const platformRecipientId = process.env.PLATFORM_RECIPIENT_ID;
     const dueAt = addBusinessDays(new Date(), 3).toISOString();
@@ -87,7 +90,7 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
       ],
       metadata: {
         tenant_id: data.tenantId,
-        cost_center_id: null,
+        cost_center_id: data.costCenterId ?? null,
         gross_amount: amounts.totalAmount,
         admin_fee: amounts.tickettoFee,
         net_amount: amounts.donationAmount,
@@ -97,14 +100,32 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
 
     const auth = "Basic " + Buffer.from(`${secretKey}:`).toString("base64");
 
-    const res = await fetch("https://api.pagar.me/core/v5/orders", {
-      method: "POST",
-      headers: {
-        Authorization: auth,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(orderPayload),
-    });
+    // Mesmo timeout aplicado nas chamadas de Pix/Cartão (payments.functions.ts)
+    // — sem isso, uma instabilidade do Pagar.me deixava essa chamada
+    // pendurada indefinidamente sem resposta amigável pro doador.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20_000);
+    let res: Response;
+    try {
+      res = await fetch("https://api.pagar.me/core/v5/orders", {
+        method: "POST",
+        headers: {
+          Authorization: auth,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderPayload),
+        signal: controller.signal,
+      });
+    } catch (e) {
+      const timedOut = e instanceof Error && e.name === "AbortError";
+      throw new Error(
+        timedOut
+          ? "Tempo esgotado ao conectar com o Pagar.me. Tente novamente."
+          : `Falha de rede ao conectar com o Pagar.me: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    } finally {
+      clearTimeout(timer);
+    }
 
     const raw = await res.text();
     let json: any;
@@ -153,6 +174,7 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
         split_seller_amount: amounts.donationAmount,
         platform_recipient_id: platformRecipientId,
         seller_recipient_id: sellerRecipientId,
+        cost_center_id: data.costCenterId ?? null,
       } as any)
       .select("id")
       .single();
@@ -165,7 +187,7 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
       .from("donations")
       .insert({
         tenant_id: data.tenantId,
-        cost_center_id: (data as any).costCenterId ?? null,
+        cost_center_id: data.costCenterId ?? null,
         amount: amounts.donationAmount / 100,
         payment_id: payment.id,
         donor_name: resolved.name?.trim() ?? null,

@@ -81,6 +81,8 @@ function redactRequest(body: any): any {
   return clone;
 }
 
+const PAGARME_TIMEOUT_MS = 20_000;
+
 async function pagarmeOrderCall(body: unknown): Promise<{
   ok: boolean;
   status: number;
@@ -99,11 +101,36 @@ async function pagarmeOrderCall(body: unknown): Promise<{
     };
   }
   const auth = "Basic " + Buffer.from(`${secretKey}:`).toString("base64");
-  const res = await fetch(`https://api.pagar.me/core/v5/orders`, {
-    method: "POST",
-    headers: { Authorization: auth, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+
+  // Sem timeout aqui, uma instabilidade na API do Pagar.me deixava essa
+  // chamada pendurada indefinidamente (até o limite da própria plataforma
+  // de hospedagem), sem nenhuma resposta amigável pro doador. O fetch
+  // também não estava protegido por try/catch — qualquer falha de rede
+  // quebrava a função inteira em vez de retornar um erro tratável.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), PAGARME_TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetch(`https://api.pagar.me/core/v5/orders`, {
+      method: "POST",
+      headers: { Authorization: auth, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    const timedOut = e instanceof Error && e.name === "AbortError";
+    return {
+      ok: false,
+      status: 0,
+      request: redactRequest(body),
+      response: null,
+      errorMessage: timedOut
+        ? "Tempo esgotado ao conectar com o Pagar.me. Tente novamente."
+        : `Falha de rede ao conectar com o Pagar.me: ${e instanceof Error ? e.message : String(e)}`,
+    };
+  } finally {
+    clearTimeout(timer);
+  }
   const raw = await res.text();
   let json: any = null;
   try {
@@ -347,10 +374,30 @@ export const pollPixCharge = createServerFn({ method: "POST" })
     if (!secretKey) throw new Error("PAGARME_SECRET_KEY não configurada");
     const auth = "Basic " + Buffer.from(`${secretKey}:`).toString("base64");
 
-    const res = await fetch(`https://api.pagar.me/core/v5/orders/${encodeURIComponent(data.gatewayId)}`, {
-      method: "GET",
-      headers: { Authorization: auth },
-    });
+    // Essa função é chamada em loop (polling) enquanto o doador espera a
+    // confirmação do Pix — sem timeout, uma instabilidade do Pagar.me
+    // travava cada tentativa até o limite da plataforma, tornando o polling
+    // inteiro muito mais lento (ou parecendo travado) do ponto de vista do
+    // doador.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), PAGARME_TIMEOUT_MS);
+    let res: Response;
+    try {
+      res = await fetch(`https://api.pagar.me/core/v5/orders/${encodeURIComponent(data.gatewayId)}`, {
+        method: "GET",
+        headers: { Authorization: auth },
+        signal: controller.signal,
+      });
+    } catch (e) {
+      const timedOut = e instanceof Error && e.name === "AbortError";
+      throw new Error(
+        timedOut
+          ? "Tempo esgotado ao consultar o status do Pix no Pagar.me."
+          : `Falha de rede ao consultar o Pagar.me: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    } finally {
+      clearTimeout(timer);
+    }
     const raw = await res.text();
     let json: any;
     try {
