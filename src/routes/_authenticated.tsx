@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthLayout() {
-  const { user, loading, signOut, profile, isStaff, isAdmin, isPlatformAdmin } = useAuth();
+  const { user, loading, signOut, profile, isStaff, isAdmin, isSuperAdmin } = useAuth();
   const { tenant: urlTenant } = useTenant();
   const router = useRouter();
   const location = useLocation();
@@ -136,7 +136,7 @@ function AuthLayout() {
             <Button asChild variant="ghost" size="sm"><Link to="/manage/mensagens">Mensagens</Link></Button>
             <Button asChild variant="ghost" size="sm"><Link to="/notifications"><Bell className="h-4 w-4" /></Link></Button>
             {isStaff && <Button asChild variant="default" size="sm"><Link to="/manage/dashboard">Gestão</Link></Button>}
-            {isPlatformAdmin && <Button asChild variant="default" size="sm"><Link to="/admin/dashboard"><ShieldAlert className="h-4 w-4 mr-1" /> Plataforma</Link></Button>}
+            {isSuperAdmin && <Button asChild variant="default" size="sm"><Link to="/admin/dashboard"><ShieldAlert className="h-4 w-4 mr-1" /> Plataforma</Link></Button>}
             <Button asChild variant="ghost" size="sm"><Link to="/profile">Perfil</Link></Button>
             <Button onClick={signOut} variant="ghost" size="sm">
               <LogOut className="h-4 w-4" /> Sair
@@ -162,7 +162,7 @@ function AuthLayout() {
                     <DropdownMenuItem asChild><Link to="/manage/dashboard"><LayoutDashboard className="h-4 w-4 mr-2" />Gestão</Link></DropdownMenuItem>
                   </>
                 )}
-                {isPlatformAdmin && (
+                {isSuperAdmin && (
                   <DropdownMenuItem asChild><Link to="/admin/dashboard"><ShieldAlert className="h-4 w-4 mr-2" />Plataforma</Link></DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />

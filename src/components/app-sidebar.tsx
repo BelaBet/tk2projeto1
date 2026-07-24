@@ -61,13 +61,13 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { tenant } = useTenant();
-  const { isStaff, isPlatformAdmin } = useAuth();
+  const { isStaff, isSuperAdmin } = useAuth();
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-2 py-1">
-          {isPlatformAdmin ? (
+          {isSuperAdmin ? (
             <>
               <img
                 src="/__l5e/assets-v1/64e1ae41-9cf7-45e3-ac17-3658b088a3df/ticketconnect-logo-long.jpeg"
@@ -116,7 +116,7 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        {isPlatformAdmin && (
+        {isSuperAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel className="h-auto py-2 leading-tight">Plataforma&nbsp;{"\n"}TicketConnect</SidebarGroupLabel>
             <SidebarGroupContent>

@@ -11,9 +11,9 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminLayout() {
-  const { isPlatformAdmin, loading } = useAuth();
+  const { isSuperAdmin, loading } = useAuth();
   if (loading) return null;
-  if (!isPlatformAdmin) {
+  if (!isSuperAdmin) {
     return (
       <Card className="p-8 text-center">
         <ShieldAlert className="mx-auto mb-3 h-8 w-8 text-amber-500" />

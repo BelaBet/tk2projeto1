@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardLayout() {
-  const { loading, isPlatformAdmin } = useAuth();
+  const { loading, isSuperAdmin } = useAuth();
   if (loading) return null;
   return (
     <SidebarProvider className="min-h-0">
@@ -20,7 +20,7 @@ function DashboardLayout() {
             <div className="flex items-center gap-2">
               <SidebarTrigger />
             </div>
-            {isPlatformAdmin && <TenantSwitcher />}
+            {isSuperAdmin && <TenantSwitcher />}
           </header>
           <main className="flex-1 p-4 sm:p-6">
             <Outlet />

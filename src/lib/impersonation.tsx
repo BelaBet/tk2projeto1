@@ -22,23 +22,23 @@ const Ctx = createContext<ImpersonationCtx>({
 });
 
 export function ImpersonationProvider({ children }: { children: ReactNode }) {
-  const { user, isPlatformAdmin } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   // End any orphan session on mount (browser was closed mid-impersonation)
   useEffect(() => {
-    if (!user || !isPlatformAdmin) return;
+    if (!user || !isSuperAdmin) return;
     supabase
       .from("impersonation_sessions")
       .update({ ended_at: new Date().toISOString() })
       .is("ended_at", null)
       .eq("impersonator_id", user.id)
       .then(() => {});
-  }, [user, isPlatformAdmin]);
+  }, [user, isSuperAdmin]);
 
   const start = async (tid: string, reason?: string) => {
-    if (!user || !isPlatformAdmin) return;
+    if (!user || !isSuperAdmin) return;
     const { data, error } = await supabase
       .from("impersonation_sessions")
       .insert({
